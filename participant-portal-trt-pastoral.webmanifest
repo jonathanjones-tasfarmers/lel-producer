@@ -1,0 +1,29 @@
+{
+  "name": "TRT Pastoral | Low Emissions Livestock trial",
+  "short_name": "TRT Pastoral",
+  "description": "TRT Pastoral's results from the Low Emissions Livestock trial.",
+  "start_url": "./participant-portal-trt-pastoral.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf9f6",
+  "theme_color": "#041221",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
