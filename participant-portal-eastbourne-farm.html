@@ -26,7 +26,8 @@
 
   DATA: reads only the public LEL_Participant_*_view tables written by
   "01. Python Scripts/21. Participant_Portal_Feed.py": Mobs, Latest, Daily,
-  Farm_Compare, Trial, Stock, Placements. Shows THIS farm's mobs, stock and
+  Farm_Compare, Trial, Stock, Placements, Growth, Progress, Weather, Events.
+  No cost data is read or shown anywhere on these pages. Shows THIS farm's mobs, stock and
   placements, plus the trial-wide average as a benchmark. Other farms' own
   figures are not shown on these pages.
 
@@ -145,6 +146,46 @@
   .install button{ font:inherit; font-family:var(--font-display); font-size:13px; font-weight:700; min-height:44px; padding:0 18px; border-radius:999px; cursor:pointer; border:1px solid var(--tf-slate-300); background:transparent; color:var(--text-muted); }
   .install button.primary{ background:var(--tf-seafeed); border-color:var(--tf-seafeed); color:#fff; }
   .offline{ border-radius:var(--radius-md); padding:12px 18px; margin-bottom:18px; font-size:13px; background:rgba(201,138,46,0.12); color:#8a5d14; border:1px solid rgba(201,138,46,0.35); }
+  /* ---- today / attention strip ---- */
+  .attn{ padding:6px 20px; }
+  .attn-head{ font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--text-heading); margin:12px 0 4px; }
+  .attn-item{ display:flex; gap:12px; align-items:flex-start; padding:11px 0; border-top:1px solid var(--border-subtle); font-size:13.5px; line-height:1.45; }
+  .attn-item:first-of-type{ border-top:0; }
+  .dot{ flex:none; width:12px; height:12px; border-radius:50%; margin-top:4px; background:var(--tf-seafeed); }
+  .dot.amber{ background:var(--tf-warning); } .dot.red{ background:var(--tf-red); }
+  .attn-item b{ color:var(--text-heading); }
+  .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+  .btn{ display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:0 20px; border-radius:999px; font-family:var(--font-display); font-size:14px; font-weight:700; text-decoration:none; cursor:pointer; border:1px solid var(--tf-slate-300); background:var(--surface-card); color:var(--text-heading); }
+  .btn.primary{ background:var(--tf-seafeed); border-color:var(--tf-seafeed); color:#fff; }
+  .btn:focus-visible{ outline:2px solid var(--tf-navy-900); outline-offset:2px; }
+  /* ---- growth by period ---- */
+  .win-chips{ display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px; }
+  .chip.sm{ font-size:11.5px; padding:6px 12px; min-height:34px; }
+  .status-line{ font-size:14px; line-height:1.5; color:var(--text-heading); margin:4px 0 14px; padding:12px 14px; border-radius:var(--radius-md); background:var(--surface-sunken); }
+  tr.sel td{ background:rgba(58,169,137,0.08); }
+  table.win-table td.mob{ cursor:pointer; }
+  tr.stale td{ color:var(--text-muted); }
+  tr.stale td.mob{ color:var(--text-muted); }
+  /* ---- planner + peers ---- */
+  .planner-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; font-size:14px; }
+  .planner-row input{ font:inherit; font-size:16px; width:110px; min-height:44px; padding:0 12px; border-radius:var(--radius-md); border:1px solid var(--tf-slate-300); }
+  .plan-line{ font-size:13.5px; line-height:1.5; margin:8px 0; }
+  .plan-line b{ color:var(--text-heading); }
+  .peer{ display:grid; grid-template-columns:minmax(120px,1.2fr) 2fr auto; gap:10px; align-items:center; padding:9px 0; border-top:1px solid var(--border-subtle); font-size:13.5px; }
+  .peer:first-child{ border-top:0; }
+  .peer .bar{ height:10px; border-radius:6px; background:var(--tf-slate-200); position:relative; }
+  .peer .bar i{ position:absolute; top:0; bottom:0; border-radius:6px; }
+  .peer.me{ font-weight:700; color:var(--text-heading); }
+  .peer .val{ font-family:var(--font-display); font-variant-numeric:tabular-nums; min-width:64px; text-align:right; }
+  .ev-note{ font-size:11.5px; color:#8a5d14; margin-top:6px; }
+  @media print{
+    .install,.offline,.banner,.actions,.range,.win-chips,.chip,.show-more,.btn,#install-dismiss,.planner-row{ display:none !important; }
+    body{ background:#fff; } .mast{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .card,.attn-item,.peer{ break-inside:avoid; } .grid-chart{ display:block; } .chart-box{ height:220px; }
+  }
+  .table-wrap{ overflow-x:auto; }
+  .win-table th, .win-table td{ padding-left:6px; padding-right:6px; }
+  .win-table td.mob{ min-width:108px; }
   [hidden]{ display:none !important; }
 </style>
 </head>
@@ -163,9 +204,13 @@
   <div class="offline" id="offline" hidden role="status"></div>
   <div class="banner" id="err" hidden role="alert"><span id="err-msg"></span><button id="retry" type="button">Try again</button></div>
 
+  <div class="label">Today</div>
+  <section class="card plain attn" id="attn" aria-live="polite"><div class="empty">Loading…</div></section>
+  <div class="actions" id="actions"></div>
+
   <div class="label">Headline figures</div>
   <section class="grid-kpi" aria-live="polite">
-    <div class="card kpi hero"><p class="kpi-label">SeaFeed growth advantage</p><p class="kpi-value skel" id="k1">0.00</p><p class="kpi-note skel" id="k1n">loading note</p></div>
+    <div class="card kpi hero"><p class="kpi-label" id="k1-label">SeaFeed vs Control growth</p><div class="win-chips" id="win-chips" role="group" aria-label="Period"></div><p class="kpi-value skel" id="k1">0.00</p><p class="kpi-note skel" id="k1n">loading note</p></div>
     <div class="card kpi"><p class="kpi-label">SeaFeed average weight</p><p class="kpi-value skel" id="k2">000</p><p class="kpi-note skel" id="k2n">loading</p></div>
     <div class="card kpi"><p class="kpi-label">Control average weight</p><p class="kpi-value skel" id="k5">000</p><p class="kpi-note skel" id="k5n">loading</p></div>
     <div class="card kpi"><p class="kpi-label">Lick block consumption</p><p class="kpi-value skel" id="k3">000</p><p class="kpi-note skel" id="k3n">loading</p></div>
@@ -173,8 +218,26 @@
     <div class="card kpi"><p class="kpi-label">Total CO<sub>2</sub>e abated</p><p class="kpi-value skel" id="k6">00</p><p class="kpi-note skel" id="k6n">loading</p></div>
   </section>
 
+  <div class="label">Growth by period</div>
+  <section class="card plain">
+    <p class="status-line" id="status-line">Loading…</p>
+    <div class="table-wrap"><table class="win-table">
+      <thead><tr><th class="l">Period</th><th>SeaFeed</th><th>Control</th><th>Difference</th></tr></thead>
+      <tbody id="win-rows"></tbody>
+    </table></div>
+    <p class="chart-sub" style="margin-top:12px">All figures are kg per head per day. Growth per animal from OptiWeigh, with SeaFeed and Control compared over the same days. Short periods swing a lot, so the longer periods are the safer guide. Tap a row to show that period at the top.</p>
+  </section>
+
   <div class="label">Lick block tracker</div>
   <section class="stock-grid" id="stock-cards" aria-live="polite"></section>
+  <div class="card plain" style="margin-top:14px">
+    <h2 class="chart-title">By trough</h2>
+    <p class="chart-sub">Where blocks were put out, how long ago, and how much was eaten from the last block at each spot. Greyed rows have not been visited for over 28 days.</p>
+    <table class="stack">
+      <thead><tr><th class="l">Where</th><th class="l">Mob</th><th>Last visit</th><th>Days since</th><th>Eaten at last visit (g/head/day)</th></tr></thead>
+      <tbody id="trough-rows"></tbody>
+    </table>
+  </div>
   <details class="ribbon" id="ribbon">
     <summary><span>Placement history</span><span class="count" id="ribbon-count"></span><span class="chev" aria-hidden="true"></span></summary>
     <div class="ribbon-body">
@@ -199,21 +262,43 @@
   <div class="range" id="range" role="group" aria-label="Time range"></div>
   <section class="grid-chart">
     <div class="card plain"><h2 class="chart-title">Growth rate</h2><p class="chart-sub">Average daily gain in kg per head per day. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are SeaFeed, dashed lines are Control.</p><div class="chart-box"><canvas id="c-adg"></canvas></div><div class="empty" id="e-adg" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">SeaFeed advantage over Control</h2><p class="chart-sub">Difference in growth rate, kg per head per day. Above zero means SeaFeed is growing faster, compared over the same days. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">SeaFeed advantage: 14-day trend</h2><p class="chart-sub">Difference in each mob's 14-day growth trend, kg per head per day. It is smoother than the table above, so the two can differ. Above zero means SeaFeed is growing faster. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
     <div class="card plain"><h2 class="chart-title">Lick block consumption</h2><p class="chart-sub">Grams eaten per head per day, from block counts at each visit. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-lick"></canvas></div><div class="empty" id="e-lick" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Rain and temperature</h2><p class="chart-sub">Daily rain (bars, mm) and highest temperature (line, &deg;C) in your region. Amber dots mark days with heat stress. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-wx"></canvas></div><div class="empty" id="e-wx" hidden></div></div>
     <div class="card plain"><h2 class="chart-title">CO<sub>2</sub>e abated</h2><p class="chart-sub">Estimated kg of CO<sub>2</sub>e avoided per head per day on your SeaFeed mobs. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-ch4"></canvas></div><div class="empty" id="e-ch4" hidden></div></div>
+  </section>
+
+  <p class="ev-note" id="ev-note" hidden>Dashed vertical lines on the charts mark events logged for your farm.</p>
+
+  <div class="label">Mob planner</div>
+  <section class="card plain">
+    <div class="planner-row"><label for="target"><b>Target weight</b></label><input id="target" type="number" inputmode="numeric" min="100" max="1000" step="10" placeholder="e.g. 450"><span>kg</span></div>
+    <div id="plan-out"><p class="plan-line">Enter a target weight to see roughly when each mob will reach it.</p></div>
+    <p class="chart-sub" style="margin-top:10px">A rough guide only. It assumes each mob keeps growing at its recent 30-day rate.</p>
+  </section>
+
+  <div class="label">How farms compare</div>
+  <section class="card plain">
+    <p class="chart-sub">SeaFeed minus Control growth (kg/day) for the period chosen at the top. Farms are named, as agreed with participants. Farms differ in mobs, start dates and conditions, so use this as a guide.</p>
+    <div id="peer-body"><div class="empty">Loading…</div></div>
+  </section>
+
+  <div class="label">Your data</div>
+  <section class="card plain">
+    <p class="chart-sub">Take your results with you: a spreadsheet of every daily figure for your farm, or a printable summary you can save as a PDF.</p>
+    <div class="actions" style="margin-top:6px"><button class="btn" id="dl-csv" type="button">Download my data (CSV)</button><button class="btn" id="print-btn" type="button">Print or save as PDF</button></div>
   </section>
 
   <details class="ribbon about-fold" id="about">
     <summary><span>About this data</span><span class="count">How to read it</span><span class="chev" aria-hidden="true"></span></summary>
     <div class="ribbon-body about">
-    <p>Each mob is one set of OptiWeigh scales on your farm. Growth rate is each animal's weight trend over the last 14 days, averaged across the mob. SeaFeed and Control are only compared over days when both mobs have a reading.</p>
+    <p>Each mob is one set of OptiWeigh scales on your farm. The growth figures near the top come from OptiWeigh's per-animal growth over each period, with SeaFeed and Control compared over the same days. The growth charts use each animal's 14-day weight trend instead, which is smoother, so the two can differ slightly.</p>
     <p>CO<sub>2</sub>e abatement is modelled, not measured directly. It estimates the methane avoided from each mob's lick block intake, using the Sea Forest product specification and a baseline emissions estimate from published research, then converts that to carbon dioxide equivalent (CO<sub>2</sub>e) using the standard 100-year warming factor for methane (<span class="gwp">28</span>). It is an estimate and will be refined as the trial continues. Total CO<sub>2</sub>e abated is the methane avoided per head to date, times the number of SeaFeed head, times that factor.</p>
     <p>New mobs are tagged <strong>Early data</strong> for their first two weeks because small samples are noisy. A dash means a measurement doesn't exist yet. Lick block use, for example, is only worked out once a block has been visited twice.</p>
     <p>Blocks in stock are the blocks delivered to your farm minus those put out. Blocks still on order are shown separately.</p>
     </div>
   </details>
-  <footer>Tasmanian Low Emissions Livestock project. Data refreshes daily. Questions: contact the TasFarmers project team.</footer>
+  <footer>Tasmanian Low Emissions Livestock project. Data refreshes daily. Questions or need more blocks? Email <a href="mailto:lel@tasfarmers.com.au">lel@tasfarmers.com.au</a>.</footer>
 </main>
 
 <script>
@@ -224,12 +309,19 @@ var FARM = 'Eastbourne Farm';
 var BASE = 'https://services6.arcgis.com/RkRGg1mAki7yG3EG/arcgis/rest/services/';
 var TABLES = { mobs:'LEL_Participant_Mobs', latest:'LEL_Participant_Latest', daily:'LEL_Participant_Daily',
                compare:'LEL_Participant_Farm_Compare', trial:'LEL_Participant_Trial',
-               stock:'LEL_Participant_Stock', placements:'LEL_Participant_Placements' };
+               stock:'LEL_Participant_Stock', placements:'LEL_Participant_Placements',
+               growth:'LEL_Participant_Growth', progress:'LEL_Participant_Progress',
+               weather:'LEL_Participant_Weather', events:'LEL_Participant_Events' };
+var SURVEY_URL = 'https://survey123.arcgis.com/share/67f84ea49fa54d4b800c1e2cfed8118e';   // LEL Lick Block Tracker (Survey123)
+var CONTACT_EMAIL = 'lel@tasfarmers.com.au';
+var REORDER_LEAD_DAYS = 40;                      // supplier lead time
+var WINDOWS = [14, 30, 90, 180, 9999];
+var WIN_LABEL = { 14:'14 days', 30:'30 days', 90:'90 days', 180:'180 days', 9999:'Since start' };
 var LOCAL = new URLSearchParams(location.search).get('data') === 'local';
 var MINT = '#3aa989', RED = '#c0392b', SLATE = '#a9b8c4', SLATE_D = '#5f7385';
 var COHORT_COLOURS = ['#3aa989', '#2f6690', '#7a5c99', '#1f7a8c'];
 var DAY = 86400000;
-var D = {}, state = { range:90, showAll:false }, charts = {}, fromCache = false, cachedAt = null;
+var D = {}, state = { range:90, showAll:false, win:30 }, charts = {}, fromCache = false, cachedAt = null;
 var GWP = 28;   // methane to CO2e, 100-year (AR5). Replaced by LEL_Industry_Benchmarks.METHANE_GWP100_AR5 when it loads.
 var RANGE_TEXT = { 30:'the last 30 days', 90:'the last 90 days', 0:'all data' };
 
@@ -241,10 +333,12 @@ function dfull(ms){ return new Date(ms).toLocaleDateString('en-AU', { day:'numer
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
 function fetchTable(key){
-  if (LOCAL) return fetch('participant-preview-data/' + TABLES[key] + '.json').then(function(r){ if(!r.ok) throw new Error(key); return r.json(); });
-  var url = BASE + TABLES[key] + '_view/FeatureServer/0/query', rows = [];
-  var where = key === 'trial' ? '1%3D1' : encodeURIComponent((key === 'mobs' || key === 'latest' || key === 'compare' || key === 'stock' || key === 'placements' ? 'farm_group' : 'farm_name') + " = '" + FARM.replace(/'/g, "''") + "'");
-  if (key === 'daily') where = '1%3D1'; // filtered to this farm's mobs client-side
+  var tname = key === 'peers' ? TABLES.growth : TABLES[key];     // 'peers' = every farm's growth rows
+  if (LOCAL) return fetch('participant-preview-data/' + tname + '.json').then(function(r){ if(!r.ok) throw new Error(key); return r.json(); });
+  var url = BASE + tname + '_view/FeatureServer/0/query', rows = [];
+  var groupKeys = ['mobs','latest','compare','stock','placements','growth','progress','weather','events'];
+  var where = encodeURIComponent((groupKeys.indexOf(key) >= 0 ? 'farm_group' : 'farm_name') + " = '" + FARM.replace(/'/g, "''") + "'");
+  if (key === 'daily' || key === 'trial' || key === 'peers') where = '1%3D1';   // daily is filtered to this farm's mobs client-side
   function page(offset){
     var q = '?where=' + where + '&outFields=*&returnGeometry=false&orderByFields=OBJECTID&resultOffset=' + offset + '&resultRecordCount=1000&f=json';
     return fetch(url + q).then(function(r){
@@ -269,7 +363,10 @@ function fetchGwp(){
 
 function load(){
   $('err').hidden = true;
-  Promise.all([fetchGwp()].concat(Object.keys(TABLES).map(function(k){ return fetchTable(k).then(function(rows){ D[k] = rows; }); })))
+  var OPTIONAL = ['growth','progress','weather','events','peers'];   // extras: if one can't load, the rest of the page still works
+  Promise.all([fetchGwp()].concat(Object.keys(TABLES).concat(['peers']).map(function(k){
+    return fetchTable(k).then(function(rows){ D[k] = rows; }, function(err){ if (OPTIONAL.indexOf(k) >= 0) { D[k] = []; return; } throw err; });
+  })))
     .then(init)
     .catch(function(){
       $('err-msg').textContent = 'Your trial data could not be loaded just now.';
@@ -290,6 +387,7 @@ function init(){
   D.compare = D.compare.filter(function(r){ return r.farm_group === FARM; });
   D.stock = D.stock.filter(function(r){ return r.farm_group === FARM; });
   D.placements = D.placements.filter(function(r){ return r.farm_group === FARM; });
+  ['growth','progress','weather','events'].forEach(function(k){ D[k] = (D[k] || []).filter(function(r){ return r.farm_group === FARM; }); });
   var keys = {}; D.mobs.forEach(function(m){ keys[m.mob_key] = 1; });
   D.daily = D.daily.filter(function(r){ return keys[r.mob_key]; });
   D.mobs.sort(function(a,b){ return a.farm_name < b.farm_name ? -1 : a.farm_name > b.farm_name ? 1 : (a.treatment < b.treatment ? 1 : -1); });
@@ -300,6 +398,15 @@ function init(){
     var b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = p[1]; b.dataset.r = p[0];
     b.onclick = function(){ state.range = p[0]; render(); }; rg.appendChild(b);
   });
+  var wc = $('win-chips'); wc.innerHTML = '';
+  WINDOWS.forEach(function(w){
+    var b = document.createElement('button'); b.className = 'chip sm'; b.type = 'button'; b.textContent = w === 9999 ? 'Since start' : WIN_LABEL[w]; b.dataset.w = w;
+    b.onclick = function(){ state.win = w; render(); }; wc.appendChild(b);
+  });
+  try { var tv = localStorage.getItem('lel_target_' + FARM); if (tv) $('target').value = tv; } catch (e) {}
+  $('target').oninput = function(){ try { localStorage.setItem('lel_target_' + FARM, this.value); } catch (e) {} renderPlanner(); };
+  $('dl-csv').onclick = downloadCsv;
+  $('print-btn').onclick = function(){ window.print(); };
   var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
   $('asof').textContent = asof ? 'Figures as of ' + dfull(asof) + '.' : '';
   render();
@@ -309,7 +416,8 @@ function render(){
   Array.prototype.forEach.call($('range').children, function(b){ b.setAttribute('aria-pressed', Number(b.dataset.r) === state.range); });
   Array.prototype.forEach.call(document.querySelectorAll('.rl'), function(e){ e.textContent = RANGE_TEXT[state.range]; });
   Array.prototype.forEach.call(document.querySelectorAll('.gwp'), function(e){ e.textContent = GWP; });
-  renderKpis(); renderLick(); renderTable(); renderCharts();
+  Array.prototype.forEach.call($('win-chips').children, function(b){ b.setAttribute('aria-pressed', Number(b.dataset.w) === state.win); });
+  renderAttention(); renderActions(); renderKpis(); renderWindows(); renderLick(); renderTroughs(); renderTable(); renderCharts(); renderPlanner(); renderPeers();
 }
 
 function setKpi(id, html, note, cls){
@@ -336,14 +444,21 @@ function renderKpis(){
   var c = D.latest.filter(function(r){ return r.farm_name === focus && r.treatment === 'control'; })[0];
   if (!s){ ['k1','k2','k3','k4','k5','k6'].forEach(function(id){ setKpi(id,'—',''); }); return; }
   var cohort = farms.length > 1 ? ' (' + (s.cohort || focus) + ')' : '';
-  var tb = trialBenchmark();
-  if (s.adg_vs_control_kg != null){
-    setKpi('k1', sgn(s.adg_vs_control_kg,2) + '<small>kg/day</small>', 'SeaFeed ' + nf(s.adg_14d_kg,2) + ' vs Control ' + nf(c && c.adg_14d_kg,2) + ' kg/day' + cohort + ', as of ' + dstr(s.as_of_date) + (tb != null ? '. Trial average ' + sgn(tb,2) : '') + (s.is_early_data && statusOf[s.mob_key] === 'Active' ? '. Early data: small samples, so it may change.' : ''), s.adg_vs_control_kg > 0 ? 'good' : 'bad');
+  var w = state.win, g = growthFor(focus, w);
+  if (g && g.eligible && g.diff_kg != null) {
+    var cls = g.diff_kg > 0.05 ? 'good' : (g.diff_kg < -0.05 ? 'bad' : '');
+    var smallN = Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40 ? ' Small sample, so treat it with caution.' : '';
+    setKpi('k1', sgn(g.diff_kg,2) + '<small>kg/day</small>',
+      'Over ' + (w === 9999 ? 'the whole trial so far' : 'the last ' + WIN_LABEL[w]) + ': SeaFeed ' + nf(g.seafeed_adg_kg,2) + ' vs Control ' + nf(g.control_adg_kg,2) + ' kg/day. ' +
+      (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed.' + smallN + cohort +
+      (s.is_early_data && statusOf[s.mob_key] === 'Active' ? ' Early data.' : ''), cls);
   } else {
-    setKpi('k1','—', (s.data_quality_note || 'Not enough data yet to compare') + cohort);
+    setKpi('k1', '—', ((g && g.note) || s.data_quality_note || 'Not enough data yet for this period.') + cohort);
   }
-  setKpi('k2', s.weight_kg_14d == null ? '—' : nf(s.weight_kg_14d,0) + '<small>kg</small>', s.weight_kg_14d == null ? (s.data_quality_note || 'No weight data yet') : 'Average of the last 14 days' + cohort, 'seafeed');
-  setKpi('k5', c && c.weight_kg_14d != null ? nf(c.weight_kg_14d,0) + '<small>kg</small>' : '—', c && c.weight_kg_14d != null ? 'Average of the last 14 days' + cohort : (c && c.data_quality_note) || 'No weight data yet');
+  var pS = progressFor(s.mob_key), pC = c ? progressFor(c.mob_key) : null;
+  function wnote(p, fallback){ return p && p.weight_gain_kg != null ? 'Gained ' + nf(p.weight_gain_kg,0) + ' kg a head since the start (' + p.gain_days + ' days).' + cohort : fallback; }
+  setKpi('k2', s.weight_kg_14d == null ? '—' : nf(s.weight_kg_14d,0) + '<small>kg</small>', s.weight_kg_14d == null ? (s.data_quality_note || 'No weight data yet') : wnote(pS, 'Average of the last 14 days' + cohort), 'seafeed');
+  setKpi('k5', c && c.weight_kg_14d != null ? nf(c.weight_kg_14d,0) + '<small>kg</small>' : '—', c && c.weight_kg_14d != null ? wnote(pC, 'Average of the last 14 days' + cohort) : (c && c.data_quality_note) || 'No weight data yet');
   setKpi('k3', s.consumption_g_per_hd_day_30d == null ? '—' : nf(s.consumption_g_per_hd_day_30d,0) + '<small>g/head/day</small>', s.consumption_g_per_hd_day_30d == null ? (s.data_quality_note || 'Not measured yet') : '30-day average' + (c && c.consumption_g_per_hd_day_30d != null ? '. Control ' + nf(c.consumption_g_per_hd_day_30d,0) + ' g' : ''));
   var co2PerHd = s.ch4_abated_g_per_hd_day_30d == null ? null : s.ch4_abated_g_per_hd_day_30d * GWP / 1000;   // kg CO2e per head per day
   var head = s.head_count || 0;
@@ -443,6 +558,7 @@ function build(id, list, opts){
     return d;
   });
   charts[id] = new Chart(box, { type:'line', data:{ labels:labels.map(dstr), datasets:ds }, options:baseOptions(any.length > 1, opts.y) });
+  charts[id].$labelsMs = labels; charts[id].$useEvents = !!opts.events;
 }
 
 function renderCharts(){
@@ -457,8 +573,8 @@ function renderCharts(){
       return { label:label(m), colour:colour(m), dash:m.treatment === 'control' ? [5,4] : [], points:pts };
     });
   }
-  build('adg', perMob('adg_14d_kg'), { y:'kg / head / day', empty:'No growth data yet.' });
-  build('lick', perMob('consumption_g_per_hd_day'), { y:'g / head / day', empty:'No lick block consumption yet. It appears once a block has been visited twice.' });
+  build('adg', perMob('adg_14d_kg'), { y:'kg / head / day', empty:'No growth data yet.', events:true });
+  build('lick', perMob('consumption_g_per_hd_day'), { y:'g / head / day', empty:'No lick block consumption yet. It appears once a block has been visited twice.', events:true });
 
   var diffSeries = names.map(function(n){
     var pts = {}; D.compare.forEach(function(r){ if (r.farm_name === n) pts[r.record_date] = r.adg_difference_kg; });
@@ -469,13 +585,211 @@ function renderCharts(){
   D.trial.forEach(function(r){ if (r.adg_14d_kg == null) return; (r.treatment === 'seafeed' ? tsf : tct)[r.record_date] = r.adg_14d_kg; });
   Object.keys(tsf).forEach(function(d){ if (tct[d] != null) td[d] = tsf[d] - tct[d]; });
   diffSeries.push({ label:'Trial average', colour:SLATE, dash:[2,3], points:td });
-  build('diff', diffSeries, { y:'kg / head / day', empty:'A comparison appears once both mobs have 14 days of readings.' });
+  build('diff', diffSeries, { y:'kg / head / day', empty:'A comparison appears once both mobs have 14 days of readings.', events:true });
 
   var k = GWP / 1000;   // g CH4 -> kg CO2e
   var ch4 = perMob('ch4_abated_g_per_hd_day', 'seafeed', k), tp = {};
   D.trial.forEach(function(r){ if (r.treatment === 'seafeed' && r.ch4_abated_g_per_hd_day != null) tp[r.record_date] = r.ch4_abated_g_per_hd_day * k; });
   ch4.push({ label:'Trial average', colour:SLATE, dash:[2,3], points:tp });
   build('ch4', ch4, { y:'kg CO2e / head / day', empty:'No CO2e figures yet.' });
+  renderWeather();
+  $('ev-note').hidden = !(D.events && D.events.length);
+}
+
+/* ---------- helpers for the manager features ---------- */
+function focusFarmName(){
+  var statusOf = {}; D.mobs.forEach(function(m){ statusOf[m.mob_key] = m.status; });
+  var farms = []; D.latest.forEach(function(r){ if (farms.indexOf(r.farm_name) < 0) farms.push(r.farm_name); });
+  return farms.filter(function(f){ return D.latest.some(function(r){ return r.farm_name === f && statusOf[r.mob_key] === 'Active'; }); }).pop() || farms[farms.length-1];
+}
+function activeFarmNames(){
+  var closed = {}, out = []; D.mobs.forEach(function(m){ if (m.status === 'Closed') closed[m.farm_name] = 1; });
+  D.mobs.forEach(function(m){ if (!closed[m.farm_name] && out.indexOf(m.farm_name) < 0) out.push(m.farm_name); });
+  return out;
+}
+function growthFor(farm, w){ return D.growth.filter(function(r){ return r.farm_name === farm && r.window_days === w; })[0]; }
+function progressFor(mobKey){ return D.progress.filter(function(r){ return r.mob_key === mobKey; })[0]; }
+function addDaysStr(days){ return new Date(Date.now() + days * DAY).toLocaleDateString('en-AU', { day:'numeric', month:'short' }); }
+
+/* ---------- growth by period + plain-English status ---------- */
+function renderWindows(){
+  var farm = focusFarmName(), rows = [], elig = [];
+  WINDOWS.forEach(function(w){
+    var g = growthFor(farm, w), ok = g && g.eligible && g.diff_kg != null;
+    if (ok) elig.push({ w:w, g:g });
+    var cls = ok ? (g.diff_kg > 0.05 ? 'good' : g.diff_kg < -0.05 ? 'bad' : '') : '';
+    rows.push('<tr class="' + (w === state.win ? 'sel' : '') + '" data-w="' + w + '"><td class="mob">' + (w === 9999 ? 'Since start' : 'Last ' + WIN_LABEL[w]) +
+      '<small>' + (ok ? (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed' : 'not enough data yet') + '</small></td>' +
+      '<td class="num">' + (ok ? nf(g.seafeed_adg_kg,2) : '—') + '</td>' +
+      '<td class="num">' + (ok ? nf(g.control_adg_kg,2) : '—') + '</td>' +
+      '<td class="num ' + cls + '">' + (ok ? sgn(g.diff_kg,2) : '—') + '</td></tr>');
+  });
+  $('win-rows').innerHTML = rows.join('');
+  Array.prototype.forEach.call($('win-rows').querySelectorAll('tr'), function(tr){ tr.onclick = function(){ state.win = Number(tr.dataset.w); render(); window.scrollTo({ top:0, behavior:'smooth' }); }; });
+  var line;
+  if (!elig.length) line = "There isn't enough weigh data yet to compare SeaFeed and Control.";
+  else {
+    function names(list){ return list.map(function(x){ return x.w === 9999 ? 'since the start' : 'the last ' + WIN_LABEL[x.w]; }).join(', ').replace(/, ([^,]*)$/, ' and $1'); }
+    var ahead = elig.filter(function(x){ return x.g.diff_kg > 0.05; }), behind = elig.filter(function(x){ return x.g.diff_kg < -0.05; });
+    if (ahead.length === elig.length) line = 'SeaFeed is ahead of Control over every period measured.';
+    else if (behind.length === elig.length) line = 'SeaFeed is behind Control over every period measured so far.';
+    else if (!ahead.length && !behind.length) line = 'SeaFeed and Control are level over every period measured.';
+    else line = 'Mixed result: SeaFeed is ' + (ahead.length ? 'ahead over ' + names(ahead) : 'level or behind') + (behind.length ? (ahead.length ? ', but behind over ' : ' over ') + names(behind) : '') + '. Short periods swing a lot, so the longer periods are the safer guide.';
+    var minN = Math.min.apply(null, elig.map(function(x){ return Math.min(x.g.seafeed_animals || 999, x.g.control_animals || 999); }));
+    if (minN < 40) line += ' Some periods are based on a small number of animals.';
+  }
+  $('status-line').textContent = line;
+}
+
+/* ---------- by trough ---------- */
+function troughData(){
+  var act = activeFarmNames(), by = {};
+  D.placements.forEach(function(p){ if (act.indexOf(p.farm_name) < 0) return; var k = p.treatment + '|' + p.location_label; (by[k] = by[k] || []).push(p); });
+  var out = [];
+  Object.keys(by).forEach(function(k){
+    var ps = by[k].sort(function(a,b){ return a.placement_time - b.placement_time; }), last = ps[ps.length-1], eaten = null;
+    for (var i = ps.length - 1; i >= 0; i--) { if (ps[i].consumption_g_per_hd_day != null) { eaten = ps[i].consumption_g_per_hd_day; break; } }
+    out.push({ t:last.treatment, mob:last.treatment_label, where:last.location_label, last:last.placement_time, days:Math.floor((Date.now() - last.placement_time) / DAY), eaten:eaten });
+  });
+  return out.filter(function(t){ return t.days <= 120; }).sort(function(a,b){ return a.t < b.t ? 1 : a.t > b.t ? -1 : (a.where < b.where ? -1 : 1); });
+}
+function renderTroughs(){
+  var rows = troughData();
+  $('trough-rows').innerHTML = rows.map(function(t){
+    var d = new Date(t.last).toLocaleDateString('en-AU', { day:'numeric', month:'short', timeZone:'Australia/Hobart' });
+    return '<tr class="' + (t.days > 28 ? 'stale' : '') + '"><td class="mob">' + esc(t.where) + '</td><td class="l" data-label="Mob">' + esc(t.mob) + '</td><td data-label="Last visit">' + d + '</td><td data-label="Days since">' + t.days + '</td><td class="num" data-label="Eaten at last visit (g/head/day)">' + nf(t.eaten,0) + '</td></tr>';
+  }).join('') || '<tr><td colspan="5"><div class="empty">No visits recorded yet.</div></td></tr>';
+}
+
+/* ---------- today: what needs attention ---------- */
+function renderAttention(){
+  var items = [], now = Date.now();
+  D.stock.slice().sort(function(a,b){ return a.treatment < b.treatment ? 1 : -1; }).forEach(function(r){
+    var L = r.treatment_label, oh = r.blocks_on_hand, dys = r.days_of_stock;
+    if (oh != null && oh <= 0) items.push({ sev:'red', rank:0, html:'<b>' + esc(L) + ' blocks: out of stock.</b> Please request more now.' });
+    else if (dys != null && dys <= REORDER_LEAD_DAYS) items.push({ sev:'red', rank:0, html:'<b>' + esc(L) + ' blocks: order now.</b> About ' + dys + ' days left and deliveries take around ' + REORDER_LEAD_DAYS + ' days.' });
+    else if (dys != null && dys <= REORDER_LEAD_DAYS + 30) items.push({ sev:'amber', rank:1, html:'<b>' + esc(L) + ' blocks: order by ' + addDaysStr(dys - REORDER_LEAD_DAYS) + '.</b> About ' + dys + ' days of stock left.' });
+    else if (oh != null) items.push({ sev:'green', rank:3, html:'<b>' + esc(L) + ' blocks:</b> ' + oh + ' in stock' + (dys != null ? (dys > 365 ? ', plenty for over a year' : ', about ' + dys + ' days') : '') + '.' });
+  });
+  // next lick block visit
+  var act = activeFarmNames(), ps = D.placements.filter(function(p){ return act.indexOf(p.farm_name) >= 0; });
+  if (ps.length) {
+    var last = Math.max.apply(null, ps.map(function(p){ return p.placement_time; })), seen = {}, gaps = [];
+    ps.forEach(function(p){ var k = Math.round(p.placement_time / DAY); if (!seen[k] && p.interval_days != null) { seen[k] = 1; gaps.push(p.interval_days); } });
+    gaps = gaps.slice(-6).sort(function(a,b){ return a - b; });
+    var typical = gaps.length ? Math.round(gaps[Math.floor(gaps.length / 2)]) : 7; typical = Math.min(Math.max(typical, 5), 14);
+    var since = Math.floor((now - last) / DAY);
+    if (since > typical + 3) items.push({ sev:'red', rank:0, html:'<b>Lick block visit overdue.</b> Blocks were last put out ' + since + ' days ago (about every ' + typical + ' days is usual).' });
+    else if (since >= typical) items.push({ sev:'amber', rank:1, html:'<b>Lick block visit due.</b> Blocks were last put out ' + since + ' days ago.' });
+    else items.push({ sev:'green', rank:3, html:'<b>Lick block visit:</b> next one due about ' + addDaysStr(typical - since) + '.' });
+  }
+  // scales
+  var mobs = D.mobs.filter(function(m){ return m.status === 'Active' && m.has_weights; });
+  mobs.forEach(function(m){
+    var ws = D.daily.filter(function(r){ return r.mob_key === m.mob_key && r.weight_kg_14d != null; }).map(function(r){ return r.record_date; });
+    if (!ws.length) return;
+    var days = Math.floor((now - Math.max.apply(null, ws)) / DAY);
+    if (days > 7) items.push({ sev:'red', rank:0, html:'<b>' + esc(m.treatment_label) + ' scales offline?</b> The OptiWeigh scales last reported ' + days + ' days ago.' });
+    else if (days > 3) items.push({ sev:'amber', rank:1, html:'<b>' + esc(m.treatment_label) + ' scales:</b> last reported ' + days + ' days ago.' });
+  });
+  // troughs gone quiet
+  troughData().filter(function(t){ return t.days > 28; }).forEach(function(t){ items.push({ sev:'amber', rank:2, html:'<b>' + esc(t.where) + ' (' + esc(t.mob) + '):</b> not visited for ' + t.days + ' days.' }); });
+  // data freshness
+  var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
+  if (asof && (now - asof) / DAY > 3) items.push({ sev:'amber', rank:1, html:'<b>Figures are out of date.</b> They were last updated on ' + dfull(asof) + '.' });
+  items.sort(function(a,b){ return a.rank - b.rank; });
+  var need = items.filter(function(i){ return i.sev !== 'green'; }).length;
+  $('attn').innerHTML = '<p class="attn-head">' + (need ? need + (need === 1 ? ' thing needs' : ' things need') + ' your attention' : 'Nothing needs your attention right now') + '</p>' +
+    items.map(function(i){ return '<div class="attn-item"><span class="dot ' + (i.sev === 'green' ? '' : i.sev) + '"></span><span>' + i.html + '</span></div>'; }).join('');
+}
+function renderActions(){
+  var parts = [];
+  if (SURVEY_URL) parts.push('<a class="btn primary" href="' + SURVEY_URL + '" target="_blank" rel="noopener">Log a lick block visit</a>');
+  var lines = D.stock.slice().sort(function(a,b){ return a.treatment < b.treatment ? 1 : -1; }).map(function(r){ return r.treatment_label + ': ' + (r.blocks_on_hand == null ? 'unknown' : r.blocks_on_hand) + ' in stock'; });
+  var body = 'Hello,\n\nPlease can we get more lick blocks for ' + FARM + '.\n\nCurrent stock (from the app):\n' + lines.join('\n') + '\n\nNumber of blocks needed: \nPreferred delivery date: \n\nThanks';
+  parts.push('<a class="btn" href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Lick block request: ' + FARM) + '&body=' + encodeURIComponent(body) + '">Request more blocks</a>');
+  parts.push('<a class="btn" href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Question from ' + FARM) + '">Contact the project team</a>');
+  $('actions').innerHTML = parts.join('');
+}
+
+/* ---------- mob planner ---------- */
+function renderPlanner(){
+  var out = $('plan-out'), target = parseFloat($('target').value);
+  if (!target) { out.innerHTML = '<p class="plan-line">Enter a target weight to see roughly when each mob will reach it.</p>'; return; }
+  var farm = focusFarmName(), g = growthFor(farm, 30), g14 = growthFor(farm, 14), html = '';
+  ['seafeed', 'control'].forEach(function(t){
+    var l = D.latest.filter(function(r){ return r.farm_name === farm && r.treatment === t; })[0]; if (!l) return;
+    var rate = g && g.eligible ? g[t + '_adg_kg'] : (g14 && g14.eligible ? g14[t + '_adg_kg'] : null), label = l.treatment_label;
+    if (l.weight_kg_14d == null) { html += '<p class="plan-line"><b>' + esc(label) + ':</b> no weight yet.</p>'; return; }
+    if (l.weight_kg_14d >= target) { html += '<p class="plan-line"><b>' + esc(label) + ':</b> already at ' + nf(l.weight_kg_14d,0) + ' kg, past your target.</p>'; return; }
+    if (rate == null || rate < 0.05) { html += '<p class="plan-line"><b>' + esc(label) + ':</b> ' + nf(l.weight_kg_14d,0) + ' kg now. Not growing fast enough recently to give a date.</p>'; return; }
+    var days = Math.ceil((target - l.weight_kg_14d) / rate);
+    html += '<p class="plan-line"><b>' + esc(label) + ':</b> ' + nf(l.weight_kg_14d,0) + ' kg now, growing ' + nf(rate,2) + ' kg/day. About <b>' + days + ' days</b> to reach ' + nf(target,0) + ' kg (around ' + addDaysStr(days) + ').</p>';
+  });
+  out.innerHTML = html || '<p class="plan-line">No weights available yet.</p>';
+}
+
+/* ---------- how farms compare ---------- */
+function renderPeers(){
+  var w = state.win, now = Date.now();
+  var rows = (D.peers || []).filter(function(r){ return r.window_days === w && r.eligible && r.diff_kg != null && (now - r.comparison_date) < 3 * DAY; });   // only farms reporting this week
+  var body = $('peer-body');
+  if (rows.length < 2) { body.innerHTML = '<div class="empty">Other farms will appear here once they have enough data for this period.</div>'; return; }
+  rows.sort(function(a,b){ return b.diff_kg - a.diff_kg; });
+  var max = Math.max.apply(null, rows.map(function(r){ return Math.abs(r.diff_kg); })) || 1;
+  body.innerHTML = rows.map(function(r){
+    var me = r.farm_group === FARM, pct = Math.abs(r.diff_kg) / max * 50, pos = r.diff_kg >= 0;
+    var name = esc(r.farm_group) + (r.cohort ? ' (' + esc(r.cohort) + ')' : '') + (me ? ' <span class="pill" style="background:rgba(58,169,137,0.15);color:var(--tf-seafeed)">You</span>' : '');
+    return '<div class="peer' + (me ? ' me' : '') + '"><span>' + name + '</span><span class="bar"><i style="' + (pos ? 'left:50%;' : 'right:50%;') + 'width:' + pct + '%;background:' + (pos ? MINT : RED) + '"></i></span><span class="val" style="color:' + (pos ? 'var(--tf-seafeed)' : 'var(--tf-red)') + '">' + sgn(r.diff_kg,2) + '</span></div>';
+  }).join('');
+}
+
+/* ---------- download + print ---------- */
+function downloadCsv(){
+  var meta = {}; D.mobs.forEach(function(m){ meta[m.mob_key] = m; });
+  var head = ['farm','mob','date','weight_kg_14d_avg','growth_kg_per_day_14d','lick_block_g_per_head_per_day','blocks_per_day','co2e_abated_kg_per_head_per_day'];
+  var lines = [head.join(',')];
+  D.daily.slice().sort(function(a,b){ return a.mob_key < b.mob_key ? -1 : a.mob_key > b.mob_key ? 1 : a.record_date - b.record_date; }).forEach(function(r){
+    var m = meta[r.mob_key] || {}, co2 = r.ch4_abated_g_per_hd_day == null ? '' : (r.ch4_abated_g_per_hd_day * GWP / 1000).toFixed(3);
+    lines.push([FARM, (m.mob_label || r.mob_key), new Date(r.record_date).toISOString().slice(0,10), r.weight_kg_14d == null ? '' : r.weight_kg_14d, r.adg_14d_kg == null ? '' : r.adg_14d_kg,
+      r.consumption_g_per_hd_day == null ? '' : r.consumption_g_per_hd_day, r.blocks_per_day == null ? '' : r.blocks_per_day, co2].map(function(v){ v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(','));
+  });
+  var blob = new Blob([lines.join('\n')], { type:'text/csv' }), a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = FARM.replace(/\s+/g, '-').toLowerCase() + '-lel-data-' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+window.addEventListener('beforeprint', function(){ Array.prototype.forEach.call(document.querySelectorAll('details'), function(d){ d.dataset.was = d.open ? '1' : ''; d.open = true; }); });
+window.addEventListener('afterprint', function(){ Array.prototype.forEach.call(document.querySelectorAll('details'), function(d){ d.open = !!d.dataset.was; }); });
+
+/* ---------- management events drawn on the charts (when events exist) ---------- */
+Chart.register({ id:'eventLines', afterDatasetsDraw:function(chart){
+  if (!chart.$useEvents || !D.events || !D.events.length || !chart.$labelsMs) return;
+  var x = chart.scales.x, ctx = chart.ctx, area = chart.chartArea;
+  ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle = '#c98a2e'; ctx.lineWidth = 1; ctx.fillStyle = '#8a5d14'; ctx.font = '10px Verdana';
+  D.events.forEach(function(e){
+    var best = -1, bd = 3 * DAY; chart.$labelsMs.forEach(function(ms, i){ var d = Math.abs(ms - e.event_date); if (d <= bd) { bd = d; best = i; } });
+    if (best < 0) return;
+    var px = x.getPixelForValue(best); ctx.beginPath(); ctx.moveTo(px, area.top); ctx.lineTo(px, area.bottom); ctx.stroke();
+    ctx.fillText(String(e.event_type || '').slice(0, 14), Math.min(px + 3, area.right - 60), area.top + 10);
+  });
+  ctx.restore();
+} });
+
+function renderWeather(){
+  var box = $('c-wx'), empty = $('e-wx');
+  if (charts.wx) { charts.wx.destroy(); charts.wx = null; }
+  var cut = cutoff(), rows = D.weather.filter(function(r){ return r.obs_date >= cut; }).sort(function(a,b){ return a.obs_date - b.obs_date; });
+  box.parentNode.hidden = !rows.length; empty.hidden = !!rows.length;
+  if (!rows.length) { empty.textContent = 'No weather data for your region yet.'; return; }
+  charts.wx = new Chart(box, { data:{ labels:rows.map(function(r){ return dstr(r.obs_date); }), datasets:[
+    { type:'bar', label:'Rain (mm)', data:rows.map(function(r){ return r.rain_mm; }), backgroundColor:'#a9b8c4', yAxisID:'y', order:2 },
+    { type:'line', label:'Highest temp (°C)', data:rows.map(function(r){ return r.temp_max_c; }), borderColor:'#2f6690', backgroundColor:'#2f6690', borderWidth:2, tension:0.25, yAxisID:'y1', order:1,
+      pointRadius:rows.map(function(r){ return r.heat_stress && r.heat_stress !== 'none' ? 4 : 0; }), pointBackgroundColor:rows.map(function(r){ return r.heat_stress && r.heat_stress !== 'none' ? '#c98a2e' : '#2f6690'; }) } ] },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ display:true, position:'bottom', labels:{ usePointStyle:true, boxWidth:8, font:{ size:11 } } } },
+      scales:{ x:{ grid:{ display:false }, border:{ display:false }, ticks:{ maxTicksLimit:5, maxRotation:0, color:SLATE_D, font:{ size:11 } } },
+               y:{ position:'left', grid:{ color:'#eef1f4' }, border:{ display:false }, ticks:{ color:SLATE_D, font:{ size:11 } }, title:{ display:true, text:'mm', color:SLATE_D, font:{ size:11 } } },
+               y1:{ position:'right', grid:{ display:false }, border:{ display:false }, ticks:{ color:SLATE_D, font:{ size:11 } }, title:{ display:true, text:'°C', color:SLATE_D, font:{ size:11 } } } } } });
 }
 
 /* ---------- Install as an app ---------- */
