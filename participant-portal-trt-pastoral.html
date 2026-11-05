@@ -794,8 +794,6 @@ function renderAttention(){
     if (days > 7) items.push({ tab:'growth', sev:'red', rank:0, html:'<b>' + esc(m.treatment_label) + ' scales offline?</b> The OptiWeigh scales last reported ' + days + ' days ago.' });
     else if (days > 3) items.push({ tab:'growth', sev:'amber', rank:1, html:'<b>' + esc(m.treatment_label) + ' scales:</b> last reported ' + days + ' days ago.' });
   });
-  // troughs gone quiet
-  troughData().filter(function(t){ return t.days > 28; }).forEach(function(t){ items.push({ tab:'blocks', sev:'amber', rank:2, html:'<b>' + esc(t.where) + ' (' + esc(t.mob) + '):</b> not visited for ' + t.days + ' days.' }); });
   // data freshness
   var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
   if (asof && (now - asof) / DAY > 3) items.push({ sev:'amber', rank:1, html:'<b>Figures are out of date.</b> They were last updated on ' + dfull(asof) + '.' });
