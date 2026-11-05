@@ -60,7 +60,7 @@
   .mast-inner{ max-width:1100px; margin:0 auto; }
   .mast h1{ font-family:var(--font-display); font-size:22px; margin:0 0 6px; }
   .mast p{ margin:0; font-size:13px; color:var(--tf-slate-400); line-height:1.5; }
-  .page{ max-width:1100px; margin:0 auto; padding:20px calc(16px + env(safe-area-inset-right, 0px)) calc(48px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
+  .page{ max-width:1100px; margin:0 auto; padding:20px calc(16px + env(safe-area-inset-right, 0px)) calc(104px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
   .label{ font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--tf-navy-900); text-transform:uppercase; letter-spacing:0.06em; margin:36px 0 14px; padding:6px 0 6px 12px; border-left:5px solid var(--tf-seafeed); line-height:1.25; }
   .grid-kpi{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
   .card{ border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-sm); }
@@ -185,15 +185,46 @@
   }
   .table-wrap{ overflow-x:auto; }
   .win-table th, .win-table td{ padding-left:6px; padding-right:6px; }
-  .win-table td.mob{ min-width:108px; }
+  .win-table td.mob{ min-width:92px; }
+  @media (max-width:520px){ .win-table th{ font-size:9.5px; letter-spacing:0.02em; padding-left:4px; padding-right:4px; } .win-table td{ padding-left:4px; padding-right:4px; } .win-table td.mob small{ font-size:10.5px; } }
   [hidden]{ display:none !important; }
+  /* jump bar, back to top, tools, small samples */
+  #totop{ position:fixed; right:calc(14px + env(safe-area-inset-right, 0px)); bottom:calc(76px + env(safe-area-inset-bottom, 0px)); z-index:40; width:46px; height:46px; border-radius:50%; border:0; background:var(--tf-navy-900); color:#fff; font-size:20px; box-shadow:0 2px 8px rgba(4,18,33,0.3); cursor:pointer; }
+  .tools{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .mini{ font:inherit; font-size:12px; font-weight:700; color:#fff; background:transparent; border:1px solid rgba(255,255,255,0.45); border-radius:999px; padding:0 12px; min-height:36px; cursor:pointer; }
+  .mini[aria-pressed="true"]{ background:#fff; color:var(--tf-navy-900); }
+  .win-table tr.smalln td.num{ color:var(--text-muted); font-weight:400; }
+  .win-table tr.smalln td.mob small{ color:#9a6a1a; }
+  html.big body{ zoom:1.15; }
+  .tab[hidden]{ display:none; }
+  html.hc{ --text-muted:#2b3a48; --border-subtle:#8c99a5; --tf-slate-200:#c3ccd4; --tf-seafeed:#1f7a5f; --tf-red:#a82a1d; --tf-warning:#9a6200; }
+  html.hc .kpi{ background:#e6ebef; border:1px solid #8c99a5; }
+  .tabbar{ position:fixed; left:0; right:0; bottom:0; z-index:50; display:grid; grid-template-columns:repeat(5,1fr); background:rgba(255,255,255,0.97); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border-top:1px solid var(--border-subtle); padding:4px calc(6px + env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) calc(6px + env(safe-area-inset-left, 0px)); }
+  .tabbar button{ position:relative; font:inherit; background:none; border:0; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:56px; color:var(--text-muted); -webkit-tap-highlight-color:transparent; }
+  .tabbar svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .tabbar circle{ fill:currentColor; stroke:none; }
+  .tabbar span{ font-size:11px; font-weight:700; letter-spacing:0.02em; }
+  .tabbar button[aria-selected="true"]{ color:var(--tf-seafeed); }
+  .tabbar button[aria-selected="true"]::before{ content:""; position:absolute; top:0; left:26%; right:26%; height:3px; border-radius:0 0 3px 3px; background:var(--tf-seafeed); }
+  .tabbar .badge{ position:absolute; top:7px; left:calc(50% + 7px); width:10px; height:10px; border-radius:50%; background:var(--tf-warning); border:2px solid #fff; }
+  .tabbar .badge.red{ background:var(--tf-red); }
+  .tab{ animation:tabin .18s ease-out; }
+  @keyframes tabin{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
+  @media (min-width:900px){ .tabbar{ left:50%; right:auto; transform:translateX(-50%); width:560px; border:1px solid var(--border-subtle); border-radius:16px 16px 0 0; } }
+  @media print{ .tabbar, #totop, .tools, #refresh{ display:none !important; } html.big body{ zoom:1; } }
 </style>
 </head>
 <body>
 <header class="mast"><div class="mast-inner">
   <h1>Eastbourne Farm</h1>
   <p>Your results from the Low Emissions Livestock trial: growth, lick blocks and CO<sub>2</sub>e. <span id="asof"></span></p>
+  <div class="tools">
+    <button class="mini" id="refresh" type="button">Refresh</button>
+    <button class="mini" id="tool-big" type="button" aria-pressed="false">Larger text</button>
+    <button class="mini" id="tool-hc" type="button" aria-pressed="false">High contrast</button>
+  </div>
 </div></header>
+<button id="totop" type="button" aria-label="Back to top" hidden>&#8593;</button>
 
 <main class="page">
   <div class="install" id="install" hidden>
@@ -204,31 +235,73 @@
   <div class="offline" id="offline" hidden role="status"></div>
   <div class="banner" id="err" hidden role="alert"><span id="err-msg"></span><button id="retry" type="button">Try again</button></div>
 
-  <div class="label">Today</div>
+<div class="tab" id="tab-home" data-tab="home">
+  <div class="label" id="s-today">Today</div>
   <section class="card plain attn" id="attn" aria-live="polite"><div class="empty">Loading…</div></section>
-  <div class="actions" id="actions"></div>
+  <div class="actions actions-fill"></div>
 
   <div class="label">Headline figures</div>
   <section class="grid-kpi" aria-live="polite">
     <div class="card kpi hero"><p class="kpi-label" id="k1-label">Treatment vs Control growth</p><div class="win-chips" id="win-chips" role="group" aria-label="Period"></div><p class="kpi-value skel" id="k1">0.00</p><p class="kpi-note skel" id="k1n">loading note</p></div>
     <div class="card kpi"><p class="kpi-label">Treatment average weight</p><p class="kpi-value skel" id="k2">000</p><p class="kpi-note skel" id="k2n">loading</p></div>
     <div class="card kpi"><p class="kpi-label">Control average weight</p><p class="kpi-value skel" id="k5">000</p><p class="kpi-note skel" id="k5n">loading</p></div>
-    <div class="card kpi"><p class="kpi-label">Lick block consumption</p><p class="kpi-value skel" id="k3">000</p><p class="kpi-note skel" id="k3n">loading</p></div>
-    <div class="card kpi"><p class="kpi-label">CO<sub>2</sub>e abated per day</p><p class="kpi-value skel" id="k4">0.00</p><p class="kpi-note skel" id="k4n">loading</p></div>
-    <div class="card kpi"><p class="kpi-label">Total CO<sub>2</sub>e abated</p><p class="kpi-value skel" id="k6">00</p><p class="kpi-note skel" id="k6n">loading</p></div>
+    <div class="card kpi" id="card-k3"><p class="kpi-label">Lick block consumption</p><p class="kpi-value skel" id="k3">000</p><p class="kpi-note skel" id="k3n">loading</p></div>
+    <div class="card kpi" id="card-k4"><p class="kpi-label">CO<sub>2</sub>e abated per day</p><p class="kpi-value skel" id="k4">0.00</p><p class="kpi-note skel" id="k4n">loading</p></div>
+    <div class="card kpi" id="card-k34" hidden><p class="kpi-label">Lick block and CO<sub>2</sub>e per day</p><p class="kpi-note" style="font-size:13px;margin-top:0">These appear after the second block visit, once there is enough to work out how much is being eaten.</p></div>
+    <div class="card kpi" id="card-k6"><p class="kpi-label">Total CO<sub>2</sub>e abated</p><p class="kpi-value skel" id="k6">00</p><p class="kpi-note skel" id="k6n">loading</p></div>
   </section>
 
-  <div class="label">Growth by period</div>
+</div>
+<div class="tab" id="tab-growth" data-tab="growth" hidden>
+  <div class="label" id="s-growth">Growth by period</div>
   <section class="card plain">
     <p class="status-line" id="status-line">Loading…</p>
     <div class="table-wrap"><table class="win-table">
       <thead><tr><th class="l">Period</th><th>Treatment</th><th>Control</th><th>Difference</th></tr></thead>
       <tbody id="win-rows"></tbody>
     </table></div>
-    <p class="chart-sub" style="margin-top:12px">All figures are kg per head per day. Growth per animal from OptiWeigh, with Treatment and Control compared over the same days. Short periods swing a lot, so the longer periods are the safer guide. Tap a row to show that period at the top.</p>
+    <p class="chart-sub" style="margin-top:12px">All figures are kg per head per day. Growth per animal from OptiWeigh, with Treatment and Control compared over the same days. Short periods swing a lot, so the longer periods are the safer guide. Tap a row to show that period on the Home tab.</p>
   </section>
 
+  <div class="label" id="s-mobs">Your mobs</div>
+  <section class="card plain">
+    <p class="chart-sub" id="cohort-note" hidden style="margin:0 0 12px"></p>
+    <table class="stack">
+      <thead><tr><th class="l">Mob</th><th>Weight (kg)</th><th>Growth (kg/day)</th><th>vs Control (kg/day)</th><th>Lick block (g/head/day)</th><th>CO<sub>2</sub>e abated (kg/head/day)</th><th class="l">Notes</th></tr></thead>
+      <tbody id="mob-rows"><tr><td colspan="7"><div class="empty">Loading…</div></td></tr></tbody>
+    </table>
+  </section>
+  <details class="ribbon" id="closed-mobs" hidden>
+    <summary><span>Closed cohorts</span><span class="count" id="closed-count"></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="ribbon-body">
+      <p class="chart-sub" style="margin-top:14px">Growth and vs Control for a closed cohort cover its whole time in the trial, with Treatment and Control compared over the same days. Weight is the last reading.</p>
+      <table class="stack">
+        <thead><tr><th class="l">Mob</th><th>Weight (kg)</th><th>Growth (kg/day)</th><th>vs Control (kg/day)</th><th>Lick block (g/head/day)</th><th>CO<sub>2</sub>e abated (kg/head/day)</th><th class="l">Notes</th></tr></thead>
+        <tbody id="closed-rows"></tbody>
+      </table>
+    </div>
+  </details>
+
+  <div class="label">Over time</div>
+  <div class="range" role="group" aria-label="Time range"></div>
+  <section class="grid-chart">
+    <div class="card plain"><h2 class="chart-title">Average weight</h2><p class="chart-sub">Average liveweight in kg, from the OptiWeigh scales. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-wt"></canvas></div><div class="empty" id="e-wt" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Growth rate</h2><p class="chart-sub">Average daily gain in kg per head per day. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-adg"></canvas></div><div class="empty" id="e-adg" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Treatment advantage: 14-day trend</h2><p class="chart-sub">Difference in each mob's 14-day growth trend, kg per head per day. It is smoother than the table above, so the two can differ. Above zero means Treatment is growing faster. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
+  </section>
+  <p class="ev-note" id="ev-note" hidden>Dashed vertical lines on the charts mark events logged for your farm.</p>
+
+  <div class="label">Mob planner</div>
+  <section class="card plain">
+    <div class="planner-row"><label for="target"><b>Target weight</b></label><input id="target" type="number" inputmode="numeric" min="100" max="1000" step="10" placeholder="e.g. 450"><span>kg</span></div>
+    <div id="plan-out"><p class="plan-line">Enter a target weight to see roughly when each mob will reach it.</p></div>
+    <p class="chart-sub" style="margin-top:10px">A rough guide only. It assumes each mob keeps growing at its recent 30-day rate.</p>
+  </section>
+
+</div>
+<div class="tab" id="tab-blocks" data-tab="blocks" hidden>
   <div class="label">Lick block tracker</div>
+  <div class="actions actions-fill" style="margin:0 0 14px"></div>
   <section class="stock-grid" id="stock-cards" aria-live="polite"></section>
   <div class="card plain" style="margin-top:14px">
     <h2 class="chart-title">By trough</h2>
@@ -250,66 +323,58 @@
     </div>
   </details>
 
-  <div class="label">Your mobs</div>
-  <section class="card plain">
-    <table class="stack">
-      <thead><tr><th class="l">Mob</th><th>Weight (kg)</th><th>Growth (kg/day)</th><th>vs Control (kg/day)</th><th>Lick block (g/head/day)</th><th>CO<sub>2</sub>e abated (kg/head/day)</th><th class="l">Notes</th></tr></thead>
-      <tbody id="mob-rows"><tr><td colspan="7"><div class="empty">Loading…</div></td></tr></tbody>
-    </table>
-  </section>
-  <details class="ribbon" id="closed-mobs" hidden>
-    <summary><span>Closed cohorts</span><span class="count" id="closed-count"></span><span class="chev" aria-hidden="true"></span></summary>
-    <div class="ribbon-body">
-      <p class="chart-sub" style="margin-top:14px">Growth and vs Control for a closed cohort cover its whole time in the trial, with Treatment and Control compared over the same days. Weight is the last reading.</p>
-      <table class="stack">
-        <thead><tr><th class="l">Mob</th><th>Weight (kg)</th><th>Growth (kg/day)</th><th>vs Control (kg/day)</th><th>Lick block (g/head/day)</th><th>CO<sub>2</sub>e abated (kg/head/day)</th><th class="l">Notes</th></tr></thead>
-        <tbody id="closed-rows"></tbody>
-      </table>
-    </div>
-  </details>
-
-  <div class="label">Trends</div>
-  <div class="range" id="range" role="group" aria-label="Time range"></div>
+</div>
+<div class="tab" id="tab-co2" data-tab="co2" hidden>
+  <div class="label">CO<sub>2</sub>e abated</div>
+  <section class="grid-kpi" id="co2-cards" aria-live="polite"></section>
+  <div class="label">Over time</div>
+  <div class="range" role="group" aria-label="Time range"></div>
   <section class="grid-chart">
-    <div class="card plain"><h2 class="chart-title">Growth rate</h2><p class="chart-sub">Average daily gain in kg per head per day. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-adg"></canvas></div><div class="empty" id="e-adg" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Treatment advantage: 14-day trend</h2><p class="chart-sub">Difference in each mob's 14-day growth trend, kg per head per day. It is smoother than the table above, so the two can differ. Above zero means Treatment is growing faster. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Lick block consumption</h2><p class="chart-sub">Grams eaten per head per day, from block counts at each visit. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-lick"></canvas></div><div class="empty" id="e-lick" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Rain and temperature</h2><p class="chart-sub">Daily rain (bars, mm) and highest temperature (line, &deg;C) in your region. Amber dots mark days with heat stress. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-wx"></canvas></div><div class="empty" id="e-wx" hidden></div></div>
     <div class="card plain"><h2 class="chart-title">CO<sub>2</sub>e abated</h2><p class="chart-sub">Estimated kg of CO<sub>2</sub>e avoided per head per day on your Treatment mobs. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-ch4"></canvas></div><div class="empty" id="e-ch4" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Lick block consumption</h2><p class="chart-sub">Grams eaten per head per day, from block counts at each visit. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-lick"></canvas></div><div class="empty" id="e-lick" hidden></div></div>
   </section>
-
-  <p class="ev-note" id="ev-note" hidden>Dashed vertical lines on the charts mark events logged for your farm.</p>
-
-  <div class="label">Mob planner</div>
-  <section class="card plain">
-    <div class="planner-row"><label for="target"><b>Target weight</b></label><input id="target" type="number" inputmode="numeric" min="100" max="1000" step="10" placeholder="e.g. 450"><span>kg</span></div>
-    <div id="plan-out"><p class="plan-line">Enter a target weight to see roughly when each mob will reach it.</p></div>
-    <p class="chart-sub" style="margin-top:10px">A rough guide only. It assumes each mob keeps growing at its recent 30-day rate.</p>
+  <div class="label">How it is worked out</div>
+  <section class="card plain about">
+    <p>CO<sub>2</sub>e abatement is modelled, not measured directly. It estimates the methane avoided from each mob's lick block intake, using the Sea Forest product specification and a baseline emissions estimate from published research, then converts that to carbon dioxide equivalent (CO<sub>2</sub>e) using the standard 100-year warming factor for methane (<span class="gwp">28</span>). It is an estimate and will be refined as the trial continues. Total CO<sub>2</sub>e abated is the methane avoided per head to date, times the number of Treatment head, times that factor.</p>
   </section>
-
-  <div class="label">How farms compare</div>
+</div>
+<div class="tab" id="tab-more" data-tab="more" hidden>
+  <div class="label" id="s-compare">How farms compare</div>
   <section class="card plain">
     <p class="chart-sub">Treatment minus Control growth (kg/day) for the period chosen at the top. Farms are named, as agreed with participants. Farms differ in mobs, start dates and conditions, so use this as a guide.</p>
     <div id="peer-body"><div class="empty">Loading…</div></div>
   </section>
 
+  <div class="label">Weather</div>
+  <div class="range" role="group" aria-label="Time range"></div>
+  <section class="grid-chart">
+    <div class="card plain"><h2 class="chart-title">Rain and temperature</h2><p class="chart-sub">Daily rain (bars, mm) and highest temperature (line, &deg;C) in your region. Amber dots mark days with heat stress. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-wx"></canvas></div><div class="empty" id="e-wx" hidden></div></div>
+  </section>
   <div class="label">Your data</div>
   <section class="card plain">
     <p class="chart-sub">Take your results with you: a spreadsheet of every daily figure for your farm, or a printable summary you can save as a PDF.</p>
-    <div class="actions" style="margin-top:6px"><button class="btn" id="dl-csv" type="button">Download my data (CSV)</button><button class="btn" id="print-btn" type="button">Print or save as PDF</button></div>
+    <div class="actions" style="margin-top:6px"><button class="btn" id="dl-csv" type="button">Download my data (CSV)</button><button class="btn" id="print-btn" type="button">Print or save as PDF</button><button class="btn" id="share-btn" type="button">Share a summary</button></div>
+    <p class="chart-sub" id="share-msg" hidden style="margin-top:8px"></p>
   </section>
 
   <details class="ribbon about-fold" id="about">
     <summary><span>About this data</span><span class="count">How to read it</span><span class="chev" aria-hidden="true"></span></summary>
     <div class="ribbon-body about">
     <p>Each mob is one set of OptiWeigh scales on your farm. The growth figures near the top come from OptiWeigh's per-animal growth over each period, with Treatment and Control compared over the same days. The growth charts use each animal's 14-day weight trend instead, which is smoother, so the two can differ slightly.</p>
-    <p>CO<sub>2</sub>e abatement is modelled, not measured directly. It estimates the methane avoided from each mob's lick block intake, using the Sea Forest product specification and a baseline emissions estimate from published research, then converts that to carbon dioxide equivalent (CO<sub>2</sub>e) using the standard 100-year warming factor for methane (<span class="gwp">28</span>). It is an estimate and will be refined as the trial continues. Total CO<sub>2</sub>e abated is the methane avoided per head to date, times the number of Treatment head, times that factor.</p>
     <p>New mobs are tagged <strong>Early data</strong> for their first two weeks because small samples are noisy. A dash means a measurement doesn't exist yet. Lick block use, for example, is only worked out once a block has been visited twice.</p>
     <p>Blocks in stock are the blocks delivered to your farm minus those put out. Blocks still on order are shown separately.</p>
     </div>
   </details>
+</div>
   <footer>Tasmanian Low Emissions Livestock project. Data refreshes daily. Questions or need more blocks? Email <a href="mailto:jonathan.jones@tasfarmers.com.au">jonathan.jones@tasfarmers.com.au</a>.</footer>
 </main>
+<nav class="tabbar" id="tabbar" aria-label="Sections">
+  <button type="button" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10"/></svg><span>Home</span><i class="badge" hidden></i></button>
+  <button type="button" data-tab="growth" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 19.5h17M5 15l4.5-5 3.5 3L19 6.5M15 6.5h4v4"/></svg><span>Growth</span><i class="badge" hidden></i></button>
+  <button type="button" data-tab="blocks" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 20 8v8l-8 4.5L4 16V8l8-4.5ZM4 8l8 4.5L20 8M12 12.5v8"/></svg><span>Blocks</span><i class="badge" hidden></i></button>
+  <button type="button" data-tab="co2" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19c2-4 5-7 9-9"/></svg><span>CO&#8322;e</span><i class="badge" hidden></i></button>
+  <button type="button" data-tab="more" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18.5" cy="12" r="1.4"/></svg><span>More</span><i class="badge" hidden></i></button>
+</nav>
 
 <script>
 (function(){
@@ -373,7 +438,7 @@ function fetchGwp(){
 }
 
 function load(){
-  $('err').hidden = true;
+  $('err').hidden = true; fromCache = false; cachedAt = null;
   var OPTIONAL = ['growth','progress','weather','events','peers'];   // extras: if one can't load, the rest of the page still works
   Promise.all([fetchGwp()].concat(Object.keys(TABLES).concat(['peers']).map(function(k){
     return fetchTable(k).then(function(rows){ D[k] = rows.map(relabel); }, function(err){ if (OPTIONAL.indexOf(k) >= 0) { D[k] = []; return; } throw err; });
@@ -404,10 +469,12 @@ function init(){
   D.mobs.sort(function(a,b){ return a.farm_name < b.farm_name ? -1 : a.farm_name > b.farm_name ? 1 : (a.treatment < b.treatment ? 1 : -1); });
   if (!D.mobs.length){ $('err-msg').textContent = 'No trial data found for ' + FARM + ' yet.'; $('retry').hidden = true; $('err').hidden = false; }
 
-  var rg = $('range'); rg.innerHTML = '';
-  [[30,'Last 30 days'],[90,'Last 90 days'],[0,'All']].forEach(function(p){
-    var b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = p[1]; b.dataset.r = p[0];
-    b.onclick = function(){ state.range = p[0]; render(); }; rg.appendChild(b);
+  Array.prototype.forEach.call(document.querySelectorAll('.range'), function(rg){
+    rg.innerHTML = '';
+    [[30,'Last 30 days'],[90,'Last 90 days'],[0,'All']].forEach(function(p){
+      var b = document.createElement('button'); b.className = 'chip'; b.type = 'button'; b.textContent = p[1]; b.dataset.r = p[0];
+      b.onclick = function(){ state.range = p[0]; render(); }; rg.appendChild(b);
+    });
   });
   var wc = $('win-chips'); wc.innerHTML = '';
   WINDOWS.forEach(function(w){
@@ -419,18 +486,27 @@ function init(){
   $('dl-csv').onclick = downloadCsv;
   $('print-btn').onclick = function(){ window.print(); };
   var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
-  $('asof').textContent = asof ? 'Figures as of ' + dfull(asof) + '.' : '';
+  $('asof').textContent = (asof ? 'Figures as of ' + dfull(asof) + '. ' : '') + 'Checked ' + new Date().toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' }) + '.';
+  $('refresh').textContent = 'Refresh'; $('refresh').disabled = false;
   render();
 }
 
 function render(){
-  Array.prototype.forEach.call($('range').children, function(b){ b.setAttribute('aria-pressed', Number(b.dataset.r) === state.range); });
+  Array.prototype.forEach.call(document.querySelectorAll('.range button'), function(b){ b.setAttribute('aria-pressed', Number(b.dataset.r) === state.range); });
   Array.prototype.forEach.call(document.querySelectorAll('.rl'), function(e){ e.textContent = RANGE_TEXT[state.range]; });
   Array.prototype.forEach.call(document.querySelectorAll('.gwp'), function(e){ e.textContent = GWP; });
   Array.prototype.forEach.call($('win-chips').children, function(b){ b.setAttribute('aria-pressed', Number(b.dataset.w) === state.win); });
-  renderAttention(); renderActions(); renderKpis(); renderWindows(); renderLick(); renderTroughs(); renderTable(); renderCharts(); renderPlanner(); renderPeers();
+  renderAttention(); renderActions(); renderKpis(); mirrorCo2Cards(); renderWindows(); renderLick(); renderTroughs(); renderTable(); renderCharts(); renderPlanner(); renderPeers();
 }
 
+function mirrorCo2Cards(){
+  var box = $('co2-cards'); box.innerHTML = '';
+  ['card-k6','card-k4','card-k3','card-k34'].forEach(function(id){
+    var src = $(id); if (!src) return;
+    var c = src.cloneNode(true); c.removeAttribute('id'); Array.prototype.forEach.call(c.querySelectorAll('[id]'), function(e){ e.removeAttribute('id'); });
+    c.hidden = src.hidden; box.appendChild(c);
+  });
+}
 function setKpi(id, html, note, cls){
   var v = $(id), n = $(id+'n');
   v.classList.remove('skel','good','bad','seafeed'); n.classList.remove('skel');
@@ -457,8 +533,9 @@ function renderKpis(){
   var cohort = farms.length > 1 ? ' (' + (s.cohort || focus) + ')' : '';
   var w = state.win, g = growthFor(focus, w);
   if (g && g.eligible && g.diff_kg != null) {
-    var cls = g.diff_kg > 0.05 ? 'good' : (g.diff_kg < -0.05 ? 'bad' : '');
-    var smallN = Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40 ? ' Small sample, so treat it with caution.' : '';
+    var isSmall = Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40;
+    var cls = !isSmall && g.diff_kg > 0.05 ? 'good' : (!isSmall && g.diff_kg < -0.05 ? 'bad' : '');
+    var smallN = isSmall ? ' Small sample, so treat it with caution.' : '';
     setKpi('k1', sgn(g.diff_kg,2) + '<small>kg/day</small>',
       'Over ' + (w === 9999 ? 'the whole trial so far' : 'the last ' + WIN_LABEL[w]) + ': Treatment ' + nf(g.seafeed_adg_kg,2) + ' vs Control ' + nf(g.control_adg_kg,2) + ' kg/day. ' +
       (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed.' + smallN + cohort +
@@ -475,13 +552,16 @@ function renderKpis(){
   var head = s.head_count || 0;
   setKpi('k4', co2PerHd == null ? '—' : nf(co2PerHd,2) + '<small>kg/head/day</small>',
     co2PerHd == null ? (s.data_quality_note || 'Not calculated yet') : '30-day average. About ' + Math.round(co2PerHd * head).toLocaleString('en-AU') + ' kg a day across ' + head + ' head' + cohort);
+  var noLick = s.consumption_g_per_hd_day_30d == null && co2PerHd == null;
+  $('card-k3').hidden = noLick; $('card-k4').hidden = noLick; $('card-k34').hidden = !noLick;
   // total for the farm: every Treatment mob (all cohorts), methane avoided per head to date x head x warming factor
   var seaMobs = D.latest.filter(function(r){ return r.treatment === 'seafeed' && r.ch4_abated_cum_kg_per_head != null && r.head_count; });
   if (!seaMobs.length) { setKpi('k6', '—', 'Not calculated yet'); }
   else {
     var kg = seaMobs.reduce(function(sum, r){ return sum + r.ch4_abated_cum_kg_per_head * r.head_count * GWP; }, 0);
     var shown = kg >= 1000 ? nf(kg / 1000, 2) + '<small>t CO<sub>2</sub>e</small>' : Math.round(kg).toLocaleString('en-AU') + '<small>kg CO<sub>2</sub>e</small>';
-    setKpi('k6', shown, 'Since you started in the trial. An estimate.');
+    var tonnes = kg / 1000, ms = [100, 50, 25, 10, 5, 1].filter(function(m){ return tonnes >= m; })[0];
+    setKpi('k6', shown, 'Since you started in the trial. An estimate.' + (ms ? ' You have passed ' + ms + (ms === 1 ? ' tonne.' : ' tonnes.') : ''));
   }
 }
 
@@ -490,6 +570,7 @@ function stockCard(r){
   if (r.blocks_placed != null) lines.push('<strong>' + r.blocks_placed + '</strong> blocks put out so far' + (r.blocks_delivered ? ' (of ' + r.blocks_delivered + ' delivered)' : ''));
   if (r.blocks_on_order > 0) lines.push('<strong>' + r.blocks_on_order + '</strong> on order' + (r.next_delivery_date ? ', due ' + dstr(r.next_delivery_date) : ''));
   if (r.days_of_stock != null) lines.push(r.days_of_stock > 365 ? 'Enough for more than a year at the current rate' : 'About <strong>' + r.days_of_stock + ' days</strong> of stock at the current rate (' + nf(r.blocks_per_day_30d,1) + ' blocks/day)');
+  if (r.days_of_stock != null && r.days_of_stock > REORDER_LEAD_DAYS && r.days_of_stock <= 365) lines.push('Order by <strong>' + addDaysStr(r.days_of_stock - REORDER_LEAD_DAYS) + '</strong> to avoid running out (deliveries take about ' + REORDER_LEAD_DAYS + ' days)');
   if (r.last_placement_date) lines.push('Last block put out ' + dstr(r.last_placement_date));
   var warn = '';
   if (r.stock_note){
@@ -539,6 +620,13 @@ function renderTable(){
       '<td class="note">' + esc(r.data_quality_note || '') + '</td></tr>';
   }
   var isClosed = function(r){ return (meta[r.mob_key] || {}).status === 'Closed'; };
+  var cn = $('cohort-note');
+  if (multiCohort) {
+    var ended = {}; rows.filter(isClosed).forEach(function(r){ var n = r.cohort || r.farm_name; if (!ended[n] || (r.as_of_date || 0) > ended[n]) ended[n] = r.as_of_date || 0; });
+    var en = Object.keys(ended).map(function(n){ return n + ' finished on ' + (ended[n] ? dfull(ended[n]) : 'an earlier date'); });
+    cn.textContent = 'A cohort is one group of animals going through the trial. ' + (en.length ? en.join('; ') + ', and its results are under Closed cohorts below.' : '');
+    cn.hidden = false;
+  } else cn.hidden = true;
   var open = rows.filter(function(r){ return !isClosed(r); }), closed = rows.filter(isClosed);
   $('mob-rows').innerHTML = open.map(rowHtml).join('') || '<tr><td colspan="7"><div class="empty">' + (closed.length ? 'No open cohorts right now.' : 'No mobs to show.') + '</div></td></tr>';
   $('closed-mobs').hidden = !closed.length;
@@ -546,13 +634,13 @@ function renderTable(){
   $('closed-rows').innerHTML = closed.map(function(r){ return rowHtml(r, true); }).join('');
 }
 
-function baseOptions(multi, yTitle){
+function baseOptions(multi, yTitle, dp){
   return {
     responsive:true, maintainAspectRatio:false, spanGaps:true,
     interaction:{ mode:'index', intersect:false },
     plugins:{ legend:{ display:multi, position:'bottom', labels:{ usePointStyle:true, boxWidth:34, boxHeight:8, font:{ size:11 },
       generateLabels:function(chart){ return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(function(it){ var ds = chart.data.datasets[it.datasetIndex] || {}; it.pointStyle = 'line'; it.lineWidth = 3; it.lineDash = ds.borderDash || []; it.strokeStyle = ds.borderColor; return it; }); } } },
-              tooltip:{ callbacks:{ label:function(c){ return ' ' + c.dataset.label + ': ' + (c.parsed.y == null ? '—' : c.parsed.y.toFixed(2)); } } } },
+              tooltip:{ callbacks:{ label:function(c){ return ' ' + c.dataset.label + ': ' + (c.parsed.y == null ? '—' : c.parsed.y.toFixed(dp == null ? 2 : dp)); } } } },
     scales:{ x:{ grid:{ display:false }, border:{ display:false }, ticks:{ maxTicksLimit:5, maxRotation:0, color:SLATE_D, font:{ size:11 } } },
              y:{ grid:{ color:'#eef1f4' }, border:{ display:false }, ticks:{ color:SLATE_D, font:{ size:11 } },
                  title:{ display:!!yTitle, text:yTitle, color:SLATE_D, font:{ size:11 } } } }
@@ -580,7 +668,7 @@ function build(id, list, opts){
     }
     return d;
   });
-  charts[id] = new Chart(box, { type:'line', data:{ labels:labels.map(dstr), datasets:ds }, options:baseOptions(any.length > 1, opts.y) });
+  charts[id] = new Chart(box, { type:'line', data:{ labels:labels.map(dstr), datasets:ds }, options:baseOptions(any.length > 1, opts.y, opts.dp) });
   charts[id].$labelsMs = labels; charts[id].$useEvents = !!opts.events;
 }
 
@@ -596,6 +684,7 @@ function renderCharts(){
       return { label:label(m), colour:colour(m), dash:m.treatment === 'control' ? [5,4] : [], points:pts };
     });
   }
+  build('wt', perMob('weight_kg_14d'), { y:'kg', empty:'No weight data yet.', events:true, dp:0 });
   build('adg', perMob('adg_14d_kg'), { y:'kg / head / day', empty:'No growth data yet.', events:true });
   build('lick', perMob('consumption_g_per_hd_day'), { y:'g / head / day', empty:'No lick block consumption yet. It appears once a block has been visited twice.', events:true });
 
@@ -640,15 +729,16 @@ function renderWindows(){
   WINDOWS.forEach(function(w){
     var g = growthFor(farm, w), ok = g && g.eligible && g.diff_kg != null;
     if (ok) elig.push({ w:w, g:g });
-    var cls = ok ? (g.diff_kg > 0.05 ? 'good' : g.diff_kg < -0.05 ? 'bad' : '') : '';
-    rows.push('<tr class="' + (w === state.win ? 'sel' : '') + '" data-w="' + w + '"><td class="mob">' + (w === 9999 ? 'Since start' : 'Last ' + WIN_LABEL[w]) +
-      '<small>' + (ok ? (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed' : 'not enough data yet') + '</small></td>' +
+    var small = ok && Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40;
+    var cls = ok && !small ? (g.diff_kg > 0.05 ? 'good' : g.diff_kg < -0.05 ? 'bad' : '') : '';
+    rows.push('<tr class="' + (w === state.win ? 'sel' : '') + (small ? ' smalln' : '') + '" data-w="' + w + '"><td class="mob">' + (w === 9999 ? 'Since start' : 'Last ' + WIN_LABEL[w]) +
+      '<small>' + (ok ? (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed' + (small ? ', small sample' : '') : 'not enough data yet') + '</small></td>' +
       '<td class="num">' + (ok ? nf(g.seafeed_adg_kg,2) : '—') + '</td>' +
       '<td class="num">' + (ok ? nf(g.control_adg_kg,2) : '—') + '</td>' +
       '<td class="num ' + cls + '">' + (ok ? sgn(g.diff_kg,2) : '—') + '</td></tr>');
   });
   $('win-rows').innerHTML = rows.join('');
-  Array.prototype.forEach.call($('win-rows').querySelectorAll('tr'), function(tr){ tr.onclick = function(){ state.win = Number(tr.dataset.w); render(); window.scrollTo({ top:0, behavior:'smooth' }); }; });
+  Array.prototype.forEach.call($('win-rows').querySelectorAll('tr'), function(tr){ tr.onclick = function(){ state.win = Number(tr.dataset.w); render(); showTab('home'); }; });
   var line;
   if (!elig.length) line = "There isn't enough weigh data yet to compare Treatment and Control.";
   else {
@@ -659,15 +749,16 @@ function renderWindows(){
     else if (!ahead.length && !behind.length) line = 'Treatment and Control are level over every period measured.';
     else line = 'Mixed result: Treatment is ' + (ahead.length ? 'ahead over ' + names(ahead) : 'level or behind') + (behind.length ? (ahead.length ? ', but behind over ' : ' over ') + names(behind) : '') + '. Short periods swing a lot, so the longer periods are the safer guide.';
     var minN = Math.min.apply(null, elig.map(function(x){ return Math.min(x.g.seafeed_animals || 999, x.g.control_animals || 999); }));
-    if (minN < 40) line += ' Some periods are based on a small number of animals.';
+    if (minN < 40) line += ' Periods with a small sample are shown in grey: treat them as a rough guide only.';
   }
+  if (D.mobs.some(function(m){ return m.status === 'Closed'; })) line += ' Finished cohorts are under Closed cohorts in Your mobs.';
   $('status-line').textContent = line;
 }
 
 /* ---------- by trough ---------- */
 function troughData(){
-  var act = activeFarmNames(), by = {};
-  D.placements.forEach(function(p){ if (act.indexOf(p.farm_name) < 0) return; var k = p.treatment + '|' + p.location_label; (by[k] = by[k] || []).push(p); });
+  var by = {};
+  D.placements.forEach(function(p){ var k = p.treatment + '|' + p.location_label; (by[k] = by[k] || []).push(p); });
   var out = [];
   Object.keys(by).forEach(function(k){
     var ps = by[k].sort(function(a,b){ return a.placement_time - b.placement_time; }), last = ps[ps.length-1], eaten = null;
@@ -689,38 +780,31 @@ function renderAttention(){
   var items = [], now = Date.now();
   D.stock.slice().sort(function(a,b){ return a.treatment < b.treatment ? 1 : -1; }).forEach(function(r){
     var L = r.treatment_label, oh = r.blocks_on_hand, dys = r.days_of_stock;
-    if (oh != null && oh <= 0) items.push({ sev:'red', rank:0, html:'<b>' + esc(L) + ' blocks: out of stock.</b> Please request more now.' });
-    else if (dys != null && dys <= REORDER_LEAD_DAYS) items.push({ sev:'red', rank:0, html:'<b>' + esc(L) + ' blocks: order now.</b> About ' + dys + ' days left and deliveries take around ' + REORDER_LEAD_DAYS + ' days.' });
-    else if (dys != null && dys <= REORDER_LEAD_DAYS + 30) items.push({ sev:'amber', rank:1, html:'<b>' + esc(L) + ' blocks: order by ' + addDaysStr(dys - REORDER_LEAD_DAYS) + '.</b> About ' + dys + ' days of stock left.' });
+    if (oh != null && oh <= 0) items.push({ tab:'blocks', sev:'red', rank:0, html:'<b>' + esc(L) + ' blocks: out of stock.</b> Please request more now.' });
+    else if (dys != null && dys <= REORDER_LEAD_DAYS) items.push({ tab:'blocks', sev:'red', rank:0, html:'<b>' + esc(L) + ' blocks: order now.</b> About ' + dys + ' days left and deliveries take around ' + REORDER_LEAD_DAYS + ' days.' });
+    else if (dys != null && dys <= REORDER_LEAD_DAYS + 30) items.push({ tab:'blocks', sev:'amber', rank:1, html:'<b>' + esc(L) + ' blocks: order by ' + addDaysStr(dys - REORDER_LEAD_DAYS) + '.</b> About ' + dys + ' days of stock left.' });
     else if (oh != null) items.push({ sev:'green', rank:3, html:'<b>' + esc(L) + ' blocks:</b> ' + oh + ' in stock' + (dys != null ? (dys > 365 ? ', plenty for over a year' : ', about ' + dys + ' days') : '') + '.' });
   });
-  // next lick block visit
-  var act = activeFarmNames(), ps = D.placements.filter(function(p){ return act.indexOf(p.farm_name) >= 0; });
-  if (ps.length) {
-    var last = Math.max.apply(null, ps.map(function(p){ return p.placement_time; })), seen = {}, gaps = [];
-    ps.forEach(function(p){ var k = Math.round(p.placement_time / DAY); if (!seen[k] && p.interval_days != null) { seen[k] = 1; gaps.push(p.interval_days); } });
-    gaps = gaps.slice(-6).sort(function(a,b){ return a - b; });
-    var typical = gaps.length ? Math.round(gaps[Math.floor(gaps.length / 2)]) : 7; typical = Math.min(Math.max(typical, 5), 14);
-    var since = Math.floor((now - last) / DAY);
-    if (since > typical + 3) items.push({ sev:'red', rank:0, html:'<b>Lick block visit overdue.</b> Blocks were last put out ' + since + ' days ago (about every ' + typical + ' days is usual).' });
-    else if (since >= typical) items.push({ sev:'amber', rank:1, html:'<b>Lick block visit due.</b> Blocks were last put out ' + since + ' days ago.' });
-    else items.push({ sev:'green', rank:3, html:'<b>Lick block visit:</b> next one due about ' + addDaysStr(typical - since) + '.' });
-  }
   // scales
   var mobs = D.mobs.filter(function(m){ return m.status === 'Active' && m.has_weights; });
   mobs.forEach(function(m){
     var ws = D.daily.filter(function(r){ return r.mob_key === m.mob_key && r.weight_kg_14d != null; }).map(function(r){ return r.record_date; });
     if (!ws.length) return;
     var days = Math.floor((now - Math.max.apply(null, ws)) / DAY);
-    if (days > 7) items.push({ sev:'red', rank:0, html:'<b>' + esc(m.treatment_label) + ' scales offline?</b> The OptiWeigh scales last reported ' + days + ' days ago.' });
-    else if (days > 3) items.push({ sev:'amber', rank:1, html:'<b>' + esc(m.treatment_label) + ' scales:</b> last reported ' + days + ' days ago.' });
+    if (days > 7) items.push({ tab:'growth', sev:'red', rank:0, html:'<b>' + esc(m.treatment_label) + ' scales offline?</b> The OptiWeigh scales last reported ' + days + ' days ago.' });
+    else if (days > 3) items.push({ tab:'growth', sev:'amber', rank:1, html:'<b>' + esc(m.treatment_label) + ' scales:</b> last reported ' + days + ' days ago.' });
   });
   // troughs gone quiet
-  troughData().filter(function(t){ return t.days > 28; }).forEach(function(t){ items.push({ sev:'amber', rank:2, html:'<b>' + esc(t.where) + ' (' + esc(t.mob) + '):</b> not visited for ' + t.days + ' days.' }); });
+  troughData().filter(function(t){ return t.days > 28; }).forEach(function(t){ items.push({ tab:'blocks', sev:'amber', rank:2, html:'<b>' + esc(t.where) + ' (' + esc(t.mob) + '):</b> not visited for ' + t.days + ' days.' }); });
   // data freshness
   var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
   if (asof && (now - asof) / DAY > 3) items.push({ sev:'amber', rank:1, html:'<b>Figures are out of date.</b> They were last updated on ' + dfull(asof) + '.' });
   items.sort(function(a,b){ return a.rank - b.rank; });
+  (function(){   // dots on the tab bar: Home shows the worst item overall, Blocks and Growth their own
+    function dot(tab, list){ var b = document.querySelector('.tabbar button[data-tab="' + tab + '"] .badge'); if (!b) return;
+      var bad = list.filter(function(i){ return i.sev !== 'green'; }); b.hidden = !bad.length; b.classList.toggle('red', bad.some(function(i){ return i.sev === 'red'; })); }
+    dot('home', items); dot('blocks', items.filter(function(i){ return i.tab === 'blocks'; })); dot('growth', items.filter(function(i){ return i.tab === 'growth'; }));
+  })();
   var need = items.filter(function(i){ return i.sev !== 'green'; }).length;
   $('attn').innerHTML = '<p class="attn-head">' + (need ? need + (need === 1 ? ' thing needs' : ' things need') + ' your attention' : 'Nothing needs your attention right now') + '</p>' +
     items.map(function(i){ return '<div class="attn-item"><span class="dot ' + (i.sev === 'green' ? '' : i.sev) + '"></span><span>' + i.html + '</span></div>'; }).join('');
@@ -732,7 +816,7 @@ function renderActions(){
   var body = 'Hello,\n\nPlease can we get more lick blocks for ' + FARM + '.\n\nCurrent stock (from the app):\n' + lines.join('\n') + '\n\nNumber of blocks needed: \nPreferred delivery date: \n\nThanks';
   parts.push('<a class="btn" href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Lick block request: ' + FARM) + '&body=' + encodeURIComponent(body) + '">Request more blocks</a>');
   parts.push('<a class="btn" href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Question from ' + FARM) + '">Contact the project team</a>');
-  $('actions').innerHTML = parts.join('');
+  Array.prototype.forEach.call(document.querySelectorAll('.actions-fill'), function(e){ e.innerHTML = parts.join(''); });
 }
 
 /* ---------- mob planner ---------- */
@@ -781,8 +865,8 @@ function downloadCsv(){
   a.href = URL.createObjectURL(blob); a.download = FARM.replace(/\s+/g, '-').toLowerCase() + '-lel-data-' + new Date().toISOString().slice(0,10) + '.csv';
   document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
-window.addEventListener('beforeprint', function(){ Array.prototype.forEach.call(document.querySelectorAll('details'), function(d){ d.dataset.was = d.open ? '1' : ''; d.open = true; }); });
-window.addEventListener('afterprint', function(){ Array.prototype.forEach.call(document.querySelectorAll('details'), function(d){ d.open = !!d.dataset.was; }); });
+window.addEventListener('beforeprint', function(){ Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){ t.hidden = false; }); Array.prototype.forEach.call(document.querySelectorAll('details'), function(d){ d.dataset.was = d.open ? '1' : ''; d.open = true; }); });
+window.addEventListener('afterprint', function(){ Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){ t.hidden = t.dataset.tab !== state.tab; }); Array.prototype.forEach.call(document.querySelectorAll('details'), function(d){ d.open = !!d.dataset.was; }); });
 
 /* ---------- management events drawn on the charts (when events exist) ---------- */
 Chart.register({ id:'eventLines', afterDatasetsDraw:function(chart){
@@ -820,8 +904,9 @@ function renderWeather(){
   function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e) { return null; } }
   var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
   var box = $('install'), text = $('install-text'), btn = $('install-btn'), deferred = null;
+  var visits = (parseInt(store('lel_visits_' + FARM) || '0', 10) || 0) + 1; store('lel_visits_' + FARM, String(visits));
   function show(html, withButton){
-    if (standalone || store('lel_install_dismissed_' + FARM)) return;
+    if (standalone || visits < 2 || store('lel_install_dismissed_' + FARM)) return;   // offer on the second visit, not the first
     text.innerHTML = html; btn.hidden = !withButton; box.hidden = false;
   }
   $('install-dismiss').onclick = function(){ box.hidden = true; store('lel_install_dismissed_' + FARM, '1'); };
@@ -840,7 +925,48 @@ function renderWeather(){
 })();
 
 $('more').onclick = function(){ state.showAll = !state.showAll; renderLick(); };
+/* ---------- tabs ---------- */
+var TABS = ['home','growth','blocks','co2','more'];
+function showTab(name, keepScroll){
+  if (TABS.indexOf(name) < 0) name = 'home';
+  state.tab = name;
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){ t.hidden = t.dataset.tab !== name; });
+  Array.prototype.forEach.call(document.querySelectorAll('.tabbar button'), function(b){ b.setAttribute('aria-selected', b.dataset.tab === name); });
+  try { localStorage.setItem('lel_tab_' + FARM, name); } catch (e) {}
+  try { history.replaceState(null, '', '#' + name); } catch (e) {}
+  if (!keepScroll) window.scrollTo(0, 0);
+  setTimeout(function(){ Object.keys(charts).forEach(function(k){ if (charts[k]) charts[k].resize(); }); }, 30);
+}
+Array.prototype.forEach.call(document.querySelectorAll('.tabbar button'), function(b){ b.onclick = function(){ if (state.tab === b.dataset.tab) window.scrollTo({ top:0, behavior:'smooth' }); else showTab(b.dataset.tab); }; });
+window.addEventListener('hashchange', function(){ var h = location.hash.replace('#',''); if (TABS.indexOf(h) >= 0 && h !== state.tab) showTab(h); });
+(function(){ var h = location.hash.replace('#',''), saved = null; try { saved = localStorage.getItem('lel_tab_' + FARM); } catch (e) {} showTab(TABS.indexOf(h) >= 0 ? h : (saved || 'home'), true); })();
+
 $('retry').onclick = load;
+$('refresh').onclick = function(){ this.textContent = 'Refreshing…'; this.disabled = true; load(); };
+
+/* ---------- display options, jump bar, back to top, share ---------- */
+(function(){
+  function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e) { return null; } }
+  var root = document.documentElement;
+  [['tool-big','big','lel_big'],['tool-hc','hc','lel_hc']].forEach(function(t){
+    var b = $(t[0]);
+    function set(on){ root.classList.toggle(t[1], on); b.setAttribute('aria-pressed', on); store(t[2], on ? '1' : '0'); }
+    if (store(t[2]) === '1') set(true);
+    b.onclick = function(){ set(!root.classList.contains(t[1])); setTimeout(function(){ Object.keys(charts).forEach(function(k){ if (charts[k]) charts[k].resize(); }); }, 50); };
+  });
+  var top = $('totop');
+  window.addEventListener('scroll', function(){ top.hidden = window.scrollY < 900; }, { passive:true });
+  top.onclick = function(){ window.scrollTo({ top:0, behavior:'smooth' }); };
+  $('share-btn').onclick = function(){
+    var g = growthFor(focusFarmName(), state.win), txt = FARM + ' in the Tasmanian Low Emissions Livestock trial: ';
+    if (g && g.eligible && g.diff_kg != null) txt += 'Treatment mob growing ' + sgn(g.diff_kg,2) + ' kg/day vs Control over ' + (state.win === 9999 ? 'the whole trial so far' : 'the last ' + WIN_LABEL[state.win]) + '. ';
+    var kgEl = $('k6').textContent; if (kgEl && kgEl !== '—') txt += 'Estimated ' + kgEl + ' abated so far.';
+    var msg = $('share-msg');
+    if (navigator.share) navigator.share({ title:FARM + ' LEL results', text:txt }).catch(function(){});
+    else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){ msg.textContent = 'Summary copied. You can paste it into a message.'; msg.hidden = false; });
+    else { msg.textContent = txt; msg.hidden = false; }
+  };
+})();
 load();
 })();
 </script>
