@@ -59,7 +59,7 @@
   .mast{ background:var(--tf-navy-900); color:#fff; padding:calc(22px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-right, 0px)) 18px calc(20px + env(safe-area-inset-left, 0px)); }
   .mast-inner{ max-width:1100px; margin:0 auto; }
   .mast h1{ font-family:var(--font-display); font-size:22px; margin:0 0 6px; }
-  .mast p{ margin:0; font-size:13px; color:var(--tf-slate-400); line-height:1.5; }
+  .mast p{ margin:0; font-size:11px; color:var(--tf-slate-400); line-height:1.45; }
   .page{ max-width:1100px; margin:0 auto; padding:20px calc(16px + env(safe-area-inset-right, 0px)) calc(104px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
   .label{ font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--tf-navy-900); text-transform:uppercase; letter-spacing:0.06em; margin:36px 0 14px; padding:6px 0 6px 12px; border-left:5px solid var(--tf-seafeed); line-height:1.25; }
   .grid-kpi{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; }
@@ -195,6 +195,14 @@
   .mini[aria-pressed="true"]{ background:#fff; color:var(--tf-navy-900); }
   .win-table tr.smalln td.num{ color:var(--text-muted); font-weight:400; }
   .win-table tr.smalln td.mob small{ color:#9a6a1a; }
+  #ptr{ position:fixed; top:calc(10px + env(safe-area-inset-top, 0px)); left:50%; transform:translateX(-50%); z-index:70; background:var(--tf-navy-900); color:#fff; font-size:12px; font-weight:700; padding:8px 16px; border-radius:999px; box-shadow:0 2px 8px rgba(4,18,33,0.3); pointer-events:none; }
+  html{ overscroll-behavior-y:contain; }
+  tr.tr-t td{ background:rgba(58,169,137,0.10); } tr.tr-c td{ background:rgba(47,102,144,0.09); }
+  tr.tr-t td:first-child{ box-shadow:inset 4px 0 0 var(--tf-seafeed); } tr.tr-c td:first-child{ box-shadow:inset 4px 0 0 #2f6690; }
+  @media (max-width:640px){
+    table.stack tr.tr-t{ background:rgba(58,169,137,0.10); border-left:4px solid var(--tf-seafeed); } table.stack tr.tr-c{ background:rgba(47,102,144,0.09); border-left:4px solid #2f6690; }
+    table.stack tr.tr-t td, table.stack tr.tr-c td{ background:none; } table.stack tr.tr-t td:first-child, table.stack tr.tr-c td:first-child{ box-shadow:none; }
+  }
   html.big body{ zoom:1.15; }
   .tab[hidden]{ display:none; }
   html.hc{ --text-muted:#2b3a48; --border-subtle:#8c99a5; --tf-slate-200:#c3ccd4; --tf-seafeed:#1f7a5f; --tf-red:#a82a1d; --tf-warning:#9a6200; }
@@ -211,18 +219,14 @@
   .tab{ animation:tabin .18s ease-out; }
   @keyframes tabin{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
   @media (min-width:900px){ .tabbar{ left:50%; right:auto; transform:translateX(-50%); width:560px; border:1px solid var(--border-subtle); border-radius:16px 16px 0 0; } }
-  @media print{ .tabbar, #totop, .tools, #refresh{ display:none !important; } html.big body{ zoom:1; } }
+  @media print{ .tabbar, #totop, #ptr{ display:none !important; } html.big body{ zoom:1; } }
 </style>
 </head>
 <body>
+<div id="ptr" role="status" hidden>Pull down to refresh</div>
 <header class="mast"><div class="mast-inner">
   <h1>Eastbourne Farm</h1>
   <p>Your results from the Low Emissions Livestock trial: growth, lick blocks and CO<sub>2</sub>e. <span id="asof"></span></p>
-  <div class="tools">
-    <button class="mini" id="refresh" type="button">Refresh</button>
-    <button class="mini" id="tool-big" type="button" aria-pressed="false">Larger text</button>
-    <button class="mini" id="tool-hc" type="button" aria-pressed="false">High contrast</button>
-  </div>
 </div></header>
 <button id="totop" type="button" aria-label="Back to top" hidden>&#8593;</button>
 
@@ -287,7 +291,7 @@
   <section class="grid-chart">
     <div class="card plain"><h2 class="chart-title">Average weight</h2><p class="chart-sub">Average liveweight in kg, from the OptiWeigh scales. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-wt"></canvas></div><div class="empty" id="e-wt" hidden></div></div>
     <div class="card plain"><h2 class="chart-title">Growth rate</h2><p class="chart-sub">Average daily gain in kg per head per day. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-adg"></canvas></div><div class="empty" id="e-adg" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Treatment advantage: 14-day trend</h2><p class="chart-sub">Difference in each mob's 14-day growth trend, kg per head per day. It is smoother than the table above, so the two can differ. Above zero means Treatment is growing faster. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Treatment advantage: 14-day trend</h2><p class="chart-sub">Difference in each mob's 14-day growth trend, kg per head per day. It is smoother than the table above, so the two can differ. Above zero means Treatment is growing faster; the line turns red below zero. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
   </section>
   <p class="ev-note" id="ev-note" hidden>Dashed vertical lines on the charts mark events logged for your farm.</p>
 
@@ -305,7 +309,7 @@
   <section class="stock-grid" id="stock-cards" aria-live="polite"></section>
   <div class="card plain" style="margin-top:14px">
     <h2 class="chart-title">By trough</h2>
-    <p class="chart-sub">Where blocks were put out, how long ago, and how much was eaten from the last block at each spot. Greyed rows have not been visited for over 28 days.</p>
+    <p class="chart-sub">Where blocks were put out, how long ago, and how much was eaten from the last block at each spot. Green rows are Treatment and blue rows are Control. Greyed text means no visit for over 28 days.</p>
     <table class="stack">
       <thead><tr><th class="l">Where</th><th class="l">Mob</th><th>Last visit</th><th>Days since</th><th>Eaten at last visit (g/head/day)</th></tr></thead>
       <tbody id="trough-rows"></tbody>
@@ -446,7 +450,7 @@ function load(){
     .then(init)
     .catch(function(){
       $('err-msg').textContent = 'Your trial data could not be loaded just now.';
-      $('err').hidden = false;
+      $('err').hidden = false; ptrDone();
       ['k1','k2','k3','k4','k5','k6'].forEach(function(id){ var e = $(id); e.classList.remove('skel'); e.textContent = '—'; $(id+'n').classList.remove('skel'); $(id+'n').textContent = ''; });
     });
 }
@@ -487,7 +491,7 @@ function init(){
   $('print-btn').onclick = function(){ window.print(); };
   var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
   $('asof').textContent = (asof ? 'Figures as of ' + dfull(asof) + '. ' : '') + 'Checked ' + new Date().toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' }) + '.';
-  $('refresh').textContent = 'Refresh'; $('refresh').disabled = false;
+  ptrDone();
   render();
 }
 
@@ -634,7 +638,7 @@ function renderTable(){
   $('closed-rows').innerHTML = closed.map(function(r){ return rowHtml(r, true); }).join('');
 }
 
-function baseOptions(multi, yTitle, dp){
+function baseOptions(multi, yTitle, dp, zero){
   return {
     responsive:true, maintainAspectRatio:false, spanGaps:true,
     interaction:{ mode:'index', intersect:false },
@@ -642,7 +646,7 @@ function baseOptions(multi, yTitle, dp){
       generateLabels:function(chart){ return Chart.defaults.plugins.legend.labels.generateLabels(chart).map(function(it){ var ds = chart.data.datasets[it.datasetIndex] || {}; it.pointStyle = 'line'; it.lineWidth = 3; it.lineDash = ds.borderDash || []; it.strokeStyle = ds.borderColor; return it; }); } } },
               tooltip:{ callbacks:{ label:function(c){ return ' ' + c.dataset.label + ': ' + (c.parsed.y == null ? '—' : c.parsed.y.toFixed(dp == null ? 2 : dp)); } } } },
     scales:{ x:{ grid:{ display:false }, border:{ display:false }, ticks:{ maxTicksLimit:5, maxRotation:0, color:SLATE_D, font:{ size:11 } } },
-             y:{ grid:{ color:'#eef1f4' }, border:{ display:false }, ticks:{ color:SLATE_D, font:{ size:11 } },
+             y:{ grid:{ color:zero ? function(c){ return c.tick && c.tick.value === 0 ? '#8a98a6' : '#eef1f4'; } : '#eef1f4' }, border:{ display:false }, ticks:{ color:SLATE_D, font:{ size:11 } },
                  title:{ display:!!yTitle, text:yTitle, color:SLATE_D, font:{ size:11 } } } }
   };
 }
@@ -665,10 +669,12 @@ function build(id, list, opts){
     if (s.sign){
       d.fill = { target:'origin', above:'rgba(58,169,137,0.12)', below:'rgba(192,57,43,0.12)' };
       d.segment = { borderColor:function(c){ return c.p1.parsed.y >= 0 ? MINT : RED; } };
+    } else if (s.redBelow) {
+      d.segment = { borderColor:function(c){ return (c.p0.parsed.y < 0 || c.p1.parsed.y < 0) ? RED : s.colour; } };
     }
     return d;
   });
-  charts[id] = new Chart(box, { type:'line', data:{ labels:labels.map(dstr), datasets:ds }, options:baseOptions(any.length > 1, opts.y, opts.dp) });
+  charts[id] = new Chart(box, { type:'line', data:{ labels:labels.map(dstr), datasets:ds }, options:baseOptions(any.length > 1, opts.y, opts.dp, opts.zero) });
   charts[id].$labelsMs = labels; charts[id].$useEvents = !!opts.events;
 }
 
@@ -691,13 +697,13 @@ function renderCharts(){
   var diffSeries = names.map(function(n){
     var pts = {}; D.compare.forEach(function(r){ if (r.farm_name === n) pts[r.record_date] = r.adg_difference_kg; });
     var m = mobs.filter(function(x){ return x.farm_name === n; })[0];
-    return { label: oneCohort ? 'Your farm' : (m.cohort || n), colour: oneCohort ? MINT : COHORT_COLOURS[names.indexOf(n) % COHORT_COLOURS.length], points:pts, sign:oneCohort };
+    return { label: oneCohort ? 'Your farm' : (m.cohort || n), colour: oneCohort ? MINT : COHORT_COLOURS[names.indexOf(n) % COHORT_COLOURS.length], points:pts, sign:oneCohort, redBelow:!oneCohort };
   });
   var tsf = {}, tct = {}, td = {};
   D.trial.forEach(function(r){ if (r.adg_14d_kg == null) return; (r.treatment === 'seafeed' ? tsf : tct)[r.record_date] = r.adg_14d_kg; });
   Object.keys(tsf).forEach(function(d){ if (tct[d] != null) td[d] = tsf[d] - tct[d]; });
   diffSeries.push({ label:'Trial average', colour:SLATE, dash:[2,3], points:td });
-  build('diff', diffSeries, { y:'kg / head / day', empty:'A comparison appears once both mobs have 14 days of readings.', events:true });
+  build('diff', diffSeries, { y:'kg / head / day', empty:'A comparison appears once both mobs have 14 days of readings.', events:true, zero:true });
 
   var k = GWP / 1000;   // g CH4 -> kg CO2e
   var ch4 = perMob('ch4_abated_g_per_hd_day', 'seafeed', k), tp = {};
@@ -771,7 +777,7 @@ function renderTroughs(){
   var rows = troughData();
   $('trough-rows').innerHTML = rows.map(function(t){
     var d = new Date(t.last).toLocaleDateString('en-AU', { day:'numeric', month:'short', timeZone:'Australia/Hobart' });
-    return '<tr class="' + (t.days > 28 ? 'stale' : '') + '"><td class="mob">' + esc(t.where) + '</td><td class="l" data-label="Mob">' + esc(t.mob) + '</td><td data-label="Last visit">' + d + '</td><td data-label="Days since">' + t.days + '</td><td class="num" data-label="Eaten at last visit (g/head/day)">' + nf(t.eaten,0) + '</td></tr>';
+    return '<tr class="' + (t.t === 'seafeed' ? 'tr-t' : 'tr-c') + (t.days > 28 ? ' stale' : '') + '"><td class="mob">' + esc(t.where) + '</td><td class="l" data-label="Mob">' + esc(t.mob) + '</td><td data-label="Last visit">' + d + '</td><td data-label="Days since">' + t.days + '</td><td class="num" data-label="Eaten at last visit (g/head/day)">' + nf(t.eaten,0) + '</td></tr>';
   }).join('') || '<tr><td colspan="5"><div class="empty">No visits recorded yet.</div></td></tr>';
 }
 
@@ -923,6 +929,23 @@ function renderWeather(){
 })();
 
 $('more').onclick = function(){ state.showAll = !state.showAll; renderLick(); };
+/* ---------- pull down to refresh ---------- */
+var ptrEl = $('ptr'), ptrY = null, ptrDy = 0, ptrBusy = false, PTR_AT = 80;
+function ptrDone(){ if (!ptrBusy) return; ptrBusy = false; setTimeout(function(){ ptrEl.hidden = true; }, 500); }
+document.addEventListener('touchstart', function(e){ ptrY = (!ptrBusy && window.scrollY <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; ptrDy = 0; }, { passive:true });
+document.addEventListener('touchmove', function(e){
+  if (ptrY == null) return;
+  ptrDy = e.touches[0].clientY - ptrY;
+  if (ptrDy > 12 && window.scrollY <= 0) { ptrEl.hidden = false; ptrEl.textContent = ptrDy >= PTR_AT ? 'Release to refresh' : 'Pull down to refresh'; }
+  else if (!ptrBusy) ptrEl.hidden = true;
+}, { passive:true });
+document.addEventListener('touchend', function(){
+  if (ptrY == null) return;
+  if (ptrDy >= PTR_AT && window.scrollY <= 0) { ptrBusy = true; ptrEl.hidden = false; ptrEl.textContent = 'Refreshing…'; load(); }
+  else if (!ptrBusy) ptrEl.hidden = true;
+  ptrY = null; ptrDy = 0;
+}, { passive:true });
+
 /* ---------- tabs ---------- */
 var TABS = ['home','growth','blocks','co2','more'];
 function showTab(name, keepScroll){
@@ -940,18 +963,11 @@ window.addEventListener('hashchange', function(){ var h = location.hash.replace(
 (function(){ var h = location.hash.replace('#',''), saved = null; try { saved = localStorage.getItem('lel_tab_' + FARM); } catch (e) {} showTab(TABS.indexOf(h) >= 0 ? h : (saved || 'home'), true); })();
 
 $('retry').onclick = load;
-$('refresh').onclick = function(){ this.textContent = 'Refreshing…'; this.disabled = true; load(); };
 
 /* ---------- display options, jump bar, back to top, share ---------- */
 (function(){
   function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e) { return null; } }
   var root = document.documentElement;
-  [['tool-big','big','lel_big'],['tool-hc','hc','lel_hc']].forEach(function(t){
-    var b = $(t[0]);
-    function set(on){ root.classList.toggle(t[1], on); b.setAttribute('aria-pressed', on); store(t[2], on ? '1' : '0'); }
-    if (store(t[2]) === '1') set(true);
-    b.onclick = function(){ set(!root.classList.contains(t[1])); setTimeout(function(){ Object.keys(charts).forEach(function(k){ if (charts[k]) charts[k].resize(); }); }, 50); };
-  });
   var top = $('totop');
   window.addEventListener('scroll', function(){ top.hidden = window.scrollY < 900; }, { passive:true });
   top.onclick = function(){ window.scrollTo({ top:0, behavior:'smooth' }); };
