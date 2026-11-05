@@ -226,7 +226,7 @@
 <div id="ptr" role="status" hidden>Pull down to refresh</div>
 <header class="mast"><div class="mast-inner">
   <h1>Eastbourne Farm</h1>
-  <p>Your results from the Low Emissions Livestock trial: growth, lick blocks and CO<sub>2</sub>e. <span id="asof"></span></p>
+  <p><span id="asof"></span></p>
 </div></header>
 <button id="totop" type="button" aria-label="Back to top" hidden>&#8593;</button>
 
@@ -251,7 +251,7 @@
     <div class="card kpi"><p class="kpi-label">Control average weight</p><p class="kpi-value skel" id="k5">000</p><p class="kpi-note skel" id="k5n">loading</p></div>
     <div class="card kpi" id="card-k3"><p class="kpi-label">Lick block consumption</p><p class="kpi-value skel" id="k3">000</p><p class="kpi-note skel" id="k3n">loading</p></div>
     <div class="card kpi" id="card-k4"><p class="kpi-label">CO<sub>2</sub>e abated per day</p><p class="kpi-value skel" id="k4">0.00</p><p class="kpi-note skel" id="k4n">loading</p></div>
-    <div class="card kpi" id="card-k34" hidden><p class="kpi-label">Lick block and CO<sub>2</sub>e per day</p><p class="kpi-note" style="font-size:13px;margin-top:0">These appear after the second block visit, once there is enough to work out how much is being eaten.</p></div>
+    <div class="card kpi" id="card-k34" hidden><p class="kpi-label">Lick block and CO<sub>2</sub>e per day</p><p class="kpi-note" style="font-size:13px;margin-top:0">Appear after the second block visit.</p></div>
     <div class="card kpi" id="card-k6"><p class="kpi-label">Total CO<sub>2</sub>e abated</p><p class="kpi-value skel" id="k6">00</p><p class="kpi-note skel" id="k6n">loading</p></div>
   </section>
 
@@ -264,7 +264,7 @@
       <thead><tr><th class="l">Period</th><th>Treatment</th><th>Control</th><th>Difference</th></tr></thead>
       <tbody id="win-rows"></tbody>
     </table></div>
-    <p class="chart-sub" style="margin-top:12px">All figures are kg per head per day. Growth per animal from OptiWeigh, with Treatment and Control compared over the same days. Short periods swing a lot, so the longer periods are the safer guide. Tap a row to show that period on the Home tab.</p>
+    <p class="chart-sub" id="win-foot" style="margin-top:12px"></p>
   </section>
 
   <div class="label" id="s-mobs">Your mobs</div>
@@ -278,7 +278,7 @@
   <details class="ribbon" id="closed-mobs" hidden>
     <summary><span>Closed cohorts</span><span class="count" id="closed-count"></span><span class="chev" aria-hidden="true"></span></summary>
     <div class="ribbon-body">
-      <p class="chart-sub" style="margin-top:14px">Growth and vs Control for a closed cohort cover its whole time in the trial, with Treatment and Control compared over the same days. Weight is the last reading.</p>
+      <p class="chart-sub" style="margin-top:14px">Whole-trial growth, compared over the same days. Weight is the last reading.</p>
       <table class="stack">
         <thead><tr><th class="l">Mob</th><th>Weight (kg)</th><th>Growth (kg/day)</th><th>vs Control (kg/day)</th><th>Lick block (g/head/day)</th><th>CO<sub>2</sub>e abated (kg/head/day)</th><th class="l">Notes</th></tr></thead>
         <tbody id="closed-rows"></tbody>
@@ -289,27 +289,26 @@
   <div class="label">Over time</div>
   <div class="range" role="group" aria-label="Time range"></div>
   <section class="grid-chart">
-    <div class="card plain"><h2 class="chart-title">Average weight</h2><p class="chart-sub">Average liveweight in kg, from the OptiWeigh scales. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-wt"></canvas></div><div class="empty" id="e-wt" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Growth rate</h2><p class="chart-sub">Average daily gain in kg per head per day. Each point averages the previous 14 days. Showing <span class="rl"></span>. Solid lines are Treatment, dashed lines are Control.</p><div class="chart-box"><canvas id="c-adg"></canvas></div><div class="empty" id="e-adg" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Treatment advantage: 14-day trend</h2><p class="chart-sub">Difference in each mob's 14-day growth trend, kg per head per day. It is smoother than the table above, so the two can differ. Above zero means Treatment is growing faster; the line turns red below zero. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Average weight</h2><p class="chart-sub">Average liveweight, kg.</p><div class="chart-box"><canvas id="c-wt"></canvas></div><div class="empty" id="e-wt" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Growth rate</h2><p class="chart-sub">kg per head per day, 14-day average.</p><div class="chart-box"><canvas id="c-adg"></canvas></div><div class="empty" id="e-adg" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Treatment advantage: 14-day trend</h2><p class="chart-sub">Treatment minus Control growth. Above zero means Treatment is growing faster.</p><div class="chart-box"><canvas id="c-diff"></canvas></div><div class="empty" id="e-diff" hidden></div></div>
   </section>
-  <p class="ev-note" id="ev-note" hidden>Dashed vertical lines on the charts mark events logged for your farm.</p>
+  <p class="ev-note" id="ev-note" hidden>Dashed vertical lines mark events logged for your farm.</p>
 
   <div class="label">Mob planner</div>
   <section class="card plain">
     <div class="planner-row"><label for="target"><b>Target weight</b></label><input id="target" type="number" inputmode="numeric" min="100" max="1000" step="10" placeholder="e.g. 450"><span>kg</span></div>
     <div id="plan-out"><p class="plan-line">Enter a target weight to see roughly when each mob will reach it.</p></div>
-    <p class="chart-sub" style="margin-top:10px">A rough guide only. It assumes each mob keeps growing at its recent 30-day rate.</p>
+    <p class="chart-sub" style="margin-top:10px">A rough guide: assumes the recent 30-day growth rate continues.</p>
   </section>
 
 </div>
 <div class="tab" id="tab-blocks" data-tab="blocks" hidden>
   <div class="label">Lick block tracker</div>
-  <div class="actions actions-fill" style="margin:0 0 14px"></div>
   <section class="stock-grid" id="stock-cards" aria-live="polite"></section>
   <div class="card plain" style="margin-top:14px">
     <h2 class="chart-title">By trough</h2>
-    <p class="chart-sub">Where blocks were put out, how long ago, and how much was eaten from the last block at each spot. Green rows are Treatment and blue rows are Control. Greyed text means no visit for over 28 days.</p>
+    <p class="chart-sub">Last visit at each spot. Green = Treatment, blue = Control. Grey text = over 28 days ago.</p>
     <table class="stack">
       <thead><tr><th class="l">Where</th><th class="l">Mob</th><th>Last visit</th><th>Days since</th><th>Eaten at last visit (g/head/day)</th></tr></thead>
       <tbody id="trough-rows"></tbody>
@@ -318,7 +317,7 @@
   <details class="ribbon" id="ribbon">
     <summary><span>Placement history</span><span class="count" id="ribbon-count"></span><span class="chev" aria-hidden="true"></span></summary>
     <div class="ribbon-body">
-      <p class="chart-sub" style="margin-top:14px">Each row is one block put out. Add up the blocks from the same visit to see the whole mob's intake.</p>
+      <p class="chart-sub" style="margin-top:14px">One row per block put out.</p>
       <table class="stack">
         <thead><tr><th class="l">Date</th><th class="l">Mob</th><th class="l">Where</th><th>Blocks</th><th>Head</th><th>Days since last visit</th><th>Eaten from this block (g/head/day)</th></tr></thead>
         <tbody id="placement-rows"></tbody>
@@ -334,29 +333,30 @@
   <div class="label">Over time</div>
   <div class="range" role="group" aria-label="Time range"></div>
   <section class="grid-chart">
-    <div class="card plain"><h2 class="chart-title">CO<sub>2</sub>e abated</h2><p class="chart-sub">Estimated kg of CO<sub>2</sub>e avoided per head per day on your Treatment mobs. Showing <span class="rl"></span>. The dotted line is the trial average.</p><div class="chart-box"><canvas id="c-ch4"></canvas></div><div class="empty" id="e-ch4" hidden></div></div>
-    <div class="card plain"><h2 class="chart-title">Lick block consumption</h2><p class="chart-sub">Grams eaten per head per day, from block counts at each visit. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-lick"></canvas></div><div class="empty" id="e-lick" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">CO<sub>2</sub>e abated</h2><p class="chart-sub">kg of CO<sub>2</sub>e avoided per head per day on Treatment mobs.</p><div class="chart-box"><canvas id="c-ch4"></canvas></div><div class="empty" id="e-ch4" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Lick block consumption</h2><p class="chart-sub">Grams per head per day, at each block visit.</p><div class="chart-box"><canvas id="c-lick"></canvas></div><div class="empty" id="e-lick" hidden></div></div>
   </section>
-  <div class="label">How it is worked out</div>
-  <section class="card plain about">
+  <details class="ribbon" id="co2-how">
+    <summary><span>How CO<sub>2</sub>e is worked out</span><span class="count">Modelled estimate, not measured</span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="ribbon-body about">
     <p>CO<sub>2</sub>e abatement is modelled, not measured directly. It estimates the methane avoided from each mob's lick block intake, using the Sea Forest product specification and a baseline emissions estimate from published research, then converts that to carbon dioxide equivalent (CO<sub>2</sub>e) using the standard 100-year warming factor for methane (<span class="gwp">28</span>). It is an estimate and will be refined as the trial continues. Total CO<sub>2</sub>e abated is the methane avoided per head to date, times the number of Treatment head, times that factor.</p>
-  </section>
+    </div>
+  </details>
 </div>
 <div class="tab" id="tab-more" data-tab="more" hidden>
   <div class="label" id="s-compare">How farms compare</div>
   <section class="card plain">
-    <p class="chart-sub">Treatment minus Control growth (kg/day) for the period chosen at the top. Farms are named, as agreed with participants. Farms differ in mobs, start dates and conditions, so use this as a guide.</p>
+    <p class="chart-sub">Treatment minus Control growth (kg/day) for the period on Home. Farms differ, so use it as a guide.</p>
     <div id="peer-body"><div class="empty">Loading…</div></div>
   </section>
 
   <div class="label">Weather</div>
   <div class="range" role="group" aria-label="Time range"></div>
   <section class="grid-chart">
-    <div class="card plain"><h2 class="chart-title">Rain and temperature</h2><p class="chart-sub">Daily rain (bars, mm) and highest temperature (line, &deg;C) in your region. Amber dots mark days with heat stress. Showing <span class="rl"></span>.</p><div class="chart-box"><canvas id="c-wx"></canvas></div><div class="empty" id="e-wx" hidden></div></div>
+    <div class="card plain"><h2 class="chart-title">Rain and temperature</h2><p class="chart-sub">Daily rain (mm) and highest temperature (&deg;C). Amber dots mark heat stress.</p><div class="chart-box"><canvas id="c-wx"></canvas></div><div class="empty" id="e-wx" hidden></div></div>
   </section>
   <div class="label">Your data</div>
   <section class="card plain">
-    <p class="chart-sub">Take your results with you: a spreadsheet of every daily figure for your farm, or a printable summary you can save as a PDF.</p>
     <div class="actions" style="margin-top:6px"><button class="btn" id="dl-csv" type="button">Download my data (CSV)</button><button class="btn" id="print-btn" type="button">Print or save as PDF</button><button class="btn" id="share-btn" type="button">Share a summary</button></div>
     <p class="chart-sub" id="share-msg" hidden style="margin-top:8px"></p>
   </section>
@@ -364,9 +364,9 @@
   <details class="ribbon about-fold" id="about">
     <summary><span>About this data</span><span class="count">How to read it</span><span class="chev" aria-hidden="true"></span></summary>
     <div class="ribbon-body about">
-    <p>Each mob is one set of OptiWeigh scales on your farm. The growth figures near the top come from OptiWeigh's per-animal growth over each period, with Treatment and Control compared over the same days. The growth charts use each animal's 14-day weight trend instead, which is smoother, so the two can differ slightly.</p>
-    <p>New mobs are tagged <strong>Early data</strong> for their first two weeks because small samples are noisy. A dash means a measurement doesn't exist yet. Lick block use, for example, is only worked out once a block has been visited twice.</p>
-    <p>Blocks in stock are the blocks delivered to your farm minus those put out. Blocks still on order are shown separately.</p>
+    <p>Each mob is one set of OptiWeigh scales. The Growth tab compares Treatment and Control over the same days. The charts use a smoother 14-day trend, so they can differ slightly.</p>
+    <p>Early data means a mob has been live under 14 days, so figures are noisy. A dash means not available yet; lick block use needs two block visits.</p>
+    <p>Blocks in stock are blocks delivered minus blocks put out.</p>
     </div>
   </details>
 </div>
@@ -490,7 +490,7 @@ function init(){
   $('dl-csv').onclick = downloadCsv;
   $('print-btn').onclick = function(){ window.print(); };
   var asof = Math.max.apply(null, D.latest.map(function(r){ return r.as_of_date || 0; }));
-  $('asof').textContent = (asof ? 'Figures as of ' + dfull(asof) + '. ' : '') + 'Checked ' + new Date().toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' }) + '.';
+  $('asof').textContent = (asof ? 'Figures as of ' + new Date(asof).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric', timeZone:'UTC' }) + ' · ' : '') + 'checked ' + new Date().toLocaleTimeString('en-AU', { hour:'numeric', minute:'2-digit' });
   ptrDone();
   render();
 }
@@ -534,23 +534,22 @@ function renderKpis(){
   var s = D.latest.filter(function(r){ return r.farm_name === focus && r.treatment === 'seafeed'; })[0];
   var c = D.latest.filter(function(r){ return r.farm_name === focus && r.treatment === 'control'; })[0];
   if (!s){ ['k1','k2','k3','k4','k5','k6'].forEach(function(id){ setKpi(id,'—',''); }); return; }
-  var cohort = farms.length > 1 ? ' (' + (s.cohort || focus) + ')' : '';
+  var cohort = '';   // the cohort is named once, in the headline label
+  $('k1-label').textContent = 'Treatment vs Control growth' + (farms.length > 1 ? ' · ' + (s.cohort || focus) : '');
   var w = state.win, g = growthFor(focus, w);
   if (g && g.eligible && g.diff_kg != null) {
     var isSmall = Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40;
     var cls = !isSmall && g.diff_kg > 0.05 ? 'good' : (!isSmall && g.diff_kg < -0.05 ? 'bad' : '');
-    var smallN = isSmall ? ' Small sample, so treat it with caution.' : '';
+    var smallN = isSmall ? ' · small sample' : '';
     setKpi('k1', sgn(g.diff_kg,2) + '<small>kg/day</small>',
-      'Over ' + (w === 9999 ? 'the whole trial so far' : 'the last ' + WIN_LABEL[w]) + ': Treatment ' + nf(g.seafeed_adg_kg,2) + ' vs Control ' + nf(g.control_adg_kg,2) + ' kg/day. ' +
-      (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed.' + smallN + cohort +
-      (s.is_early_data && statusOf[s.mob_key] === 'Active' ? ' Early data.' : ''), cls);
+      'Treatment ' + nf(g.seafeed_adg_kg,2) + ' vs Control ' + nf(g.control_adg_kg,2) + ' kg/day · ' + (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals' + smallN, cls);
   } else {
     setKpi('k1', '—', ((g && g.note) || s.data_quality_note || 'Not enough data yet for this period.') + cohort);
   }
   var pS = progressFor(s.mob_key), pC = c ? progressFor(c.mob_key) : null;
-  function wnote(p, fallback){ return p && p.weight_gain_kg != null ? 'Gained ' + nf(p.weight_gain_kg,0) + ' kg a head since the start (' + p.gain_days + ' days).' + cohort : fallback; }
-  setKpi('k2', s.weight_kg_14d == null ? '—' : nf(s.weight_kg_14d,0) + '<small>kg</small>', s.weight_kg_14d == null ? (s.data_quality_note || 'No weight data yet') : wnote(pS, 'Average of the last 14 days' + cohort), 'seafeed');
-  setKpi('k5', c && c.weight_kg_14d != null ? nf(c.weight_kg_14d,0) + '<small>kg</small>' : '—', c && c.weight_kg_14d != null ? wnote(pC, 'Average of the last 14 days' + cohort) : (c && c.data_quality_note) || 'No weight data yet');
+  function wnote(p, fallback){ return p && p.weight_gain_kg != null ? '+' + nf(p.weight_gain_kg,0) + ' kg a head since the start (' + p.gain_days + ' days)' : fallback; }
+  setKpi('k2', s.weight_kg_14d == null ? '—' : nf(s.weight_kg_14d,0) + '<small>kg</small>', s.weight_kg_14d == null ? (s.data_quality_note || 'No weight data yet') : wnote(pS, '14-day average'), 'seafeed');
+  setKpi('k5', c && c.weight_kg_14d != null ? nf(c.weight_kg_14d,0) + '<small>kg</small>' : '—', c && c.weight_kg_14d != null ? wnote(pC, '14-day average') : (c && c.data_quality_note) || 'No weight data yet');
   setKpi('k3', s.consumption_g_per_hd_day_30d == null ? '—' : nf(s.consumption_g_per_hd_day_30d,0) + '<small>g/head/day</small>', s.consumption_g_per_hd_day_30d == null ? (s.data_quality_note || 'Not measured yet') : '30-day average' + (c && c.consumption_g_per_hd_day_30d != null ? '. Control ' + nf(c.consumption_g_per_hd_day_30d,0) + ' g' : ''));
   var co2PerHd = s.ch4_abated_g_per_hd_day_30d == null ? null : s.ch4_abated_g_per_hd_day_30d * GWP / 1000;   // kg CO2e per head per day
   var head = s.head_count || 0;
@@ -565,22 +564,22 @@ function renderKpis(){
     var kg = seaMobs.reduce(function(sum, r){ return sum + r.ch4_abated_cum_kg_per_head * r.head_count * GWP; }, 0);
     var shown = kg >= 1000 ? nf(kg / 1000, 2) + '<small>t CO<sub>2</sub>e</small>' : Math.round(kg).toLocaleString('en-AU') + '<small>kg CO<sub>2</sub>e</small>';
     var tonnes = kg / 1000, ms = [100, 50, 25, 10, 5, 1].filter(function(m){ return tonnes >= m; })[0];
-    setKpi('k6', shown, 'Since you started in the trial. An estimate.' + (ms ? ' You have passed ' + ms + (ms === 1 ? ' tonne.' : ' tonnes.') : ''));
+    setKpi('k6', shown, 'Since the trial began. An estimate.' + (ms ? ' Passed ' + ms + (ms === 1 ? ' tonne.' : ' tonnes.') : ''));
   }
 }
 
 function stockCard(r){
   var onHand = r.blocks_on_hand, cls = (onHand != null && onHand <= 0) ? 'bad' : '', lines = [];
-  if (r.blocks_placed != null) lines.push('<strong>' + r.blocks_placed + '</strong> blocks put out so far' + (r.blocks_delivered ? ' (of ' + r.blocks_delivered + ' delivered)' : ''));
+  if (r.blocks_placed != null) lines.push('<strong>' + r.blocks_placed + '</strong>' + (r.blocks_delivered ? ' of ' + r.blocks_delivered : '') + ' put out');
   if (r.blocks_on_order > 0) lines.push('<strong>' + r.blocks_on_order + '</strong> on order' + (r.next_delivery_date ? ', due ' + dstr(r.next_delivery_date) : ''));
-  if (r.days_of_stock != null) lines.push(r.days_of_stock > 365 ? 'Enough for more than a year at the current rate' : 'About <strong>' + r.days_of_stock + ' days</strong> of stock at the current rate (' + nf(r.blocks_per_day_30d,1) + ' blocks/day)');
-  if (r.days_of_stock != null && r.days_of_stock > REORDER_LEAD_DAYS && r.days_of_stock <= 365) lines.push('Order by <strong>' + addDaysStr(r.days_of_stock - REORDER_LEAD_DAYS) + '</strong> to avoid running out (deliveries take about ' + REORDER_LEAD_DAYS + ' days)');
+  if (r.days_of_stock != null) lines.push(r.days_of_stock > 365 ? 'More than a year left' : 'About <strong>' + r.days_of_stock + ' days</strong> left (' + nf(r.blocks_per_day_30d,1) + ' blocks/day)');
+  if (r.days_of_stock != null && r.days_of_stock > REORDER_LEAD_DAYS && r.days_of_stock <= 365) lines.push('Order by <strong>' + addDaysStr(r.days_of_stock - REORDER_LEAD_DAYS) + '</strong>');
   if (r.last_placement_date) lines.push('Last block put out ' + dstr(r.last_placement_date));
   var warn = '';
   if (r.stock_note){
     if (r.stock_note.indexOf('Running low') === 0 || r.stock_note.indexOf('Out of stock') === 0)
       warn = '<p class="stock-warn' + (onHand != null && onHand <= 0 ? ' out' : '') + '">' + esc(r.stock_note) + '</p>';
-    else lines.push(esc(r.stock_note));
+    else lines.push(/^Days of stock appears/.test(r.stock_note) ? 'Days left appear after the second visit' : esc(r.stock_note));
   }
   return '<div class="card kpi stock"><p class="kpi-label">' + esc(r.treatment_label) + ' blocks in stock</p>' +
     '<p class="kpi-value ' + cls + '">' + (onHand == null ? '—' : onHand) + '<small>blocks</small></p>' +
@@ -608,6 +607,7 @@ function renderTable(){
   var meta = {}; D.mobs.forEach(function(m){ meta[m.mob_key] = m; });
   var rows = D.latest.slice().sort(function(a,b){ return a.farm_name < b.farm_name ? -1 : a.farm_name > b.farm_name ? 1 : (a.treatment < b.treatment ? 1 : -1); });
   var multiCohort = rows.some(function(x){ return x.farm_name !== rows[0].farm_name; });
+  function cell(label, val, cls){ return '<td class="num ' + cls + (val === '—' ? ' na' : '') + '" data-label="' + label + '">' + val + '</td>'; }
   function rowHtml(r, final){
     var m = meta[r.mob_key] || {};
     var pill = m.status === 'Closed' ? '<span class="pill closed">Closed</span>' : (m.is_early_data && m.status === 'Active' ? '<span class="pill">Early data</span>' : '');
@@ -618,17 +618,17 @@ function renderTable(){
     }
     var title = (multiCohort ? esc(r.cohort || 'Cohort 1') + ' ' : '') + esc(r.treatment_label);
     return '<tr><td class="mob">' + title + pill + '<small>' + (r.head_count ? r.head_count + ' head' : '') + '</small></td>' +
-      '<td class="num" data-label="Weight (kg)">' + nf(r.weight_kg_14d,0) + '</td><td class="num" data-label="Growth (kg/day)">' + nf(growth,2) + '</td>' +
-      '<td class="num ' + (!sf ? 'na' : v == null ? '' : v > 0 ? 'good' : 'bad') + '" data-label="vs Control (kg/day)">' + (sf ? sgn(v,2) : '—') + '</td>' +
-      '<td class="num" data-label="Lick block (g/head/day)">' + nf(r.consumption_g_per_hd_day_30d,0) + '</td><td class="num' + (sf ? '' : ' na') + '" data-label="CO2e abated (kg/head/day)">' + (sf && r.ch4_abated_g_per_hd_day_30d != null ? nf(r.ch4_abated_g_per_hd_day_30d * GWP / 1000,2) : '—') + '</td>' +
-      '<td class="note">' + esc(r.data_quality_note || '') + '</td></tr>';
+      cell('Weight (kg)', nf(r.weight_kg_14d,0), '') + cell('Growth (kg/day)', nf(growth,2), '') +
+      cell('vs Control (kg/day)', sf ? sgn(v,2) : '—', !sf ? 'na' : v == null ? '' : v > 0 ? 'good' : 'bad') +
+      cell('Lick block (g/head/day)', nf(r.consumption_g_per_hd_day_30d,0), '') + cell('CO2e abated (kg/head/day)', sf && r.ch4_abated_g_per_hd_day_30d != null ? nf(r.ch4_abated_g_per_hd_day_30d * GWP / 1000,2) : '—', sf ? '' : 'na') +
+      '<td class="note">' + esc(/^(Early data|Cohort closed)/.test(r.data_quality_note || '') ? '' : (r.data_quality_note || '')) + '</td></tr>';
   }
   var isClosed = function(r){ return (meta[r.mob_key] || {}).status === 'Closed'; };
   var cn = $('cohort-note');
   if (multiCohort) {
     var ended = {}; rows.filter(isClosed).forEach(function(r){ var n = r.cohort || r.farm_name; if (!ended[n] || (r.as_of_date || 0) > ended[n]) ended[n] = r.as_of_date || 0; });
-    var en = Object.keys(ended).map(function(n){ return n + ' finished on ' + (ended[n] ? dfull(ended[n]) : 'an earlier date'); });
-    cn.textContent = 'A cohort is one group of animals going through the trial. ' + (en.length ? en.join('; ') + ', and its results are under Closed cohorts below.' : '');
+    var en = Object.keys(ended).map(function(n){ return n + ' finished ' + (ended[n] ? new Date(ended[n]).toLocaleDateString('en-AU', { day:'numeric', month:'short', timeZone:'UTC' }) : 'earlier'); });
+    cn.textContent = en.length ? en.join('; ') + ' (a cohort is one group of animals). Results are under Closed cohorts.' : 'A cohort is one group of animals going through the trial.';
     cn.hidden = false;
   } else cn.hidden = true;
   var open = rows.filter(function(r){ return !isClosed(r); }), closed = rows.filter(isClosed);
@@ -738,26 +738,25 @@ function renderWindows(){
     var small = ok && Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40;
     var cls = ok && !small ? (g.diff_kg > 0.05 ? 'good' : g.diff_kg < -0.05 ? 'bad' : '') : '';
     rows.push('<tr class="' + (w === state.win ? 'sel' : '') + (small ? ' smalln' : '') + '" data-w="' + w + '"><td class="mob">' + (w === 9999 ? 'Since start' : 'Last ' + WIN_LABEL[w]) +
-      '<small>' + (ok ? (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals weighed' + (small ? ', small sample' : '') : 'not enough data yet') + '</small></td>' +
+      '<small>' + (ok ? (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals' : 'not enough data yet') + '</small></td>' +
       '<td class="num">' + (ok ? nf(g.seafeed_adg_kg,2) : '—') + '</td>' +
       '<td class="num">' + (ok ? nf(g.control_adg_kg,2) : '—') + '</td>' +
       '<td class="num ' + cls + '">' + (ok ? sgn(g.diff_kg,2) : '—') + '</td></tr>');
   });
   $('win-rows').innerHTML = rows.join('');
   Array.prototype.forEach.call($('win-rows').querySelectorAll('tr'), function(tr){ tr.onclick = function(){ state.win = Number(tr.dataset.w); render(); showTab('home'); }; });
-  var line;
-  if (!elig.length) line = "There isn't enough weigh data yet to compare Treatment and Control.";
+  var line, anySmall = elig.some(function(x){ return Math.min(x.g.seafeed_animals || 999, x.g.control_animals || 999) < 40; });
+  if (!elig.length) line = "Not enough weigh data yet to compare Treatment and Control.";
   else {
-    function names(list){ return list.map(function(x){ return x.w === 9999 ? 'since the start' : 'the last ' + WIN_LABEL[x.w]; }).join(', ').replace(/, ([^,]*)$/, ' and $1'); }
+    function names(list){ var n = list.filter(function(x){ return x.w !== 9999; }).map(function(x){ return x.w; }), t = n.length ? n.join(', ').replace(/, ([^,]*)$/, ' and $1') + ' days' : '';
+      if (list.some(function(x){ return x.w === 9999; })) t += (t ? ' and ' : '') + 'since the start'; return t; }
     var ahead = elig.filter(function(x){ return x.g.diff_kg > 0.05; }), behind = elig.filter(function(x){ return x.g.diff_kg < -0.05; });
-    if (ahead.length === elig.length) line = 'Treatment is ahead of Control over every period measured.';
-    else if (behind.length === elig.length) line = 'Treatment is behind Control over every period measured so far.';
-    else if (!ahead.length && !behind.length) line = 'Treatment and Control are level over every period measured.';
-    else line = 'Mixed result: Treatment is ' + (ahead.length ? 'ahead over ' + names(ahead) : 'level or behind') + (behind.length ? (ahead.length ? ', but behind over ' : ' over ') + names(behind) : '') + '. Short periods swing a lot, so the longer periods are the safer guide.';
-    var minN = Math.min.apply(null, elig.map(function(x){ return Math.min(x.g.seafeed_animals || 999, x.g.control_animals || 999); }));
-    if (minN < 40) line += ' Periods with a small sample are shown in grey: treat them as a rough guide only.';
+    if (ahead.length === elig.length) line = 'Treatment is ahead over every period.';
+    else if (behind.length === elig.length) line = 'Treatment is behind over every period so far.';
+    else if (!ahead.length && !behind.length) line = 'Treatment and Control are level over every period.';
+    else line = 'Treatment is ' + (ahead.length ? 'ahead over ' + names(ahead) : 'level or behind') + (behind.length ? (ahead.length ? ', but behind over ' : ' over ') + names(behind) : '') + '.';
   }
-  if (D.mobs.some(function(m){ return m.status === 'Closed'; })) line += ' Finished cohorts are under Closed cohorts in Your mobs.';
+  $('win-foot').textContent = 'kg per head per day, compared over the same days. Tap a row to show it on Home.' + (anySmall ? ' Grey rows are a small sample: a rough guide only.' : '');
   $('status-line').textContent = line;
 }
 
@@ -821,7 +820,7 @@ function renderAttention(){
   })();
   var need = items.filter(function(i){ return i.sev !== 'green'; }).length;
   $('attn').innerHTML = '<p class="attn-head">' + (need ? need + (need === 1 ? ' thing needs' : ' things need') + ' your attention' : 'Nothing needs your attention right now') + '</p>' +
-    items.map(function(i){ return '<div class="attn-item"><span class="dot ' + (i.sev === 'green' ? '' : i.sev) + '"></span><span>' + i.html + '</span></div>'; }).join('');
+    items.filter(function(i){ return i.sev !== 'green'; }).map(function(i){ return '<div class="attn-item"><span class="dot ' + (i.sev === 'green' ? '' : i.sev) + '"></span><span>' + i.html + '</span></div>'; }).join('');
 }
 function renderActions(){
   var parts = [];
@@ -829,7 +828,6 @@ function renderActions(){
   var lines = D.stock.slice().sort(function(a,b){ return a.treatment < b.treatment ? 1 : -1; }).map(function(r){ return r.treatment_label + ': ' + (r.blocks_on_hand == null ? 'unknown' : r.blocks_on_hand) + ' in stock'; });
   var body = 'Hello,\n\nPlease can we get more lick blocks for ' + FARM + '.\n\nCurrent stock (from the app):\n' + lines.join('\n') + '\n\nNumber of blocks needed: \nPreferred delivery date: \n\nThanks';
   parts.push('<a class="btn" href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Lick block request: ' + FARM) + '&body=' + encodeURIComponent(body) + '">Request more blocks</a>');
-  parts.push('<a class="btn" href="mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Question from ' + FARM) + '">Contact the project team</a>');
   Array.prototype.forEach.call(document.querySelectorAll('.actions-fill'), function(e){ e.innerHTML = parts.join(''); });
 }
 
