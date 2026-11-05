@@ -540,7 +540,7 @@ function renderKpis(){
   var w = state.win, g = growthFor(focus, w);
   if (g && g.eligible && g.diff_kg != null) {
     var isSmall = Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40;
-    var cls = !isSmall && g.diff_kg > 0.05 ? 'good' : (!isSmall && g.diff_kg < -0.05 ? 'bad' : '');
+    var rd = Math.round(g.diff_kg * 100) / 100, cls = rd > 0 ? 'good' : (rd < 0 ? 'bad' : '');   // teal if positive, red if negative
     var smallN = isSmall ? ' · small sample' : '';
     setKpi('k1', sgn(g.diff_kg,2) + '<small>kg/day</small>',
       'Treatment ' + nf(g.seafeed_adg_kg,2) + ' vs Control ' + nf(g.control_adg_kg,2) + ' kg/day · ' + (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals' + smallN, cls);
