@@ -771,7 +771,17 @@ function troughData(){
     for (var i = ps.length - 1; i >= 0; i--) { if (ps[i].consumption_g_per_hd_day != null) { eaten = ps[i].consumption_g_per_hd_day; break; } }
     out.push({ t:last.treatment, mob:last.treatment_label, where:last.location_label, last:last.placement_time, days:Math.floor((Date.now() - last.placement_time) / DAY), eaten:eaten });
   });
-  return out.filter(function(t){ return t.days <= 120; }).sort(function(a,b){ return a.t < b.t ? 1 : a.t > b.t ? -1 : (a.where < b.where ? -1 : 1); });
+  var WORDS = ['one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
+  function rank(w){   // scales first, then Trough 1, 2, 3 ... (digits or words), anything else last
+    var l = String(w).toLowerCase(); if (/scale/.test(l)) return 0;
+    var d = l.match(/\d+/); if (d) return +d[0];
+    var wd = l.match(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b/);
+    return wd ? WORDS.indexOf(wd[1]) + 1 : 99;
+  }
+  return out.filter(function(t){ return t.days <= 120; }).sort(function(a,b){
+    if (a.t !== b.t) return a.t < b.t ? 1 : -1;               // Treatment first, then Control
+    var ra = rank(a.where), rb = rank(b.where); return ra !== rb ? ra - rb : (a.where < b.where ? -1 : 1);
+  });
 }
 function renderTroughs(){
   var rows = troughData();
