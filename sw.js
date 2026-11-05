@@ -3,7 +3,7 @@
    - ArcGIS data queries: network-first (8 s), falling back to the last saved copy. A fallback response carries
      X-LEL-Cache: 1 and X-LEL-Cached-At so the page can say "showing saved data from <date>".
    Bump CACHE_VERSION whenever the page or this file changes, so phones pick up the new version. */
-const CACHE_VERSION = 'lel-farm-v14';
+const CACHE_VERSION = 'lel-farm-v16';
 const SHELL_CACHE = CACHE_VERSION + '-shell';
 const DATA_CACHE = CACHE_VERSION + '-data';
 const DATA_HOST = 'services6.arcgis.com';

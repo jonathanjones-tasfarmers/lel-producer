@@ -194,6 +194,7 @@
   .mini{ font:inherit; font-size:12px; font-weight:700; color:#fff; background:transparent; border:1px solid rgba(255,255,255,0.45); border-radius:999px; padding:0 12px; min-height:36px; cursor:pointer; }
   .mini[aria-pressed="true"]{ background:#fff; color:var(--tf-navy-900); }
   .win-table tr.smalln td.num{ color:var(--text-muted); font-weight:400; }
+  .win-table tr.smalln td.num.good{ color:var(--tf-seafeed); font-weight:700; } .win-table tr.smalln td.num.bad{ color:var(--tf-red); font-weight:700; }
   .win-table tr.smalln td.mob small{ color:#9a6a1a; }
   #ptr{ position:fixed; top:calc(10px + env(safe-area-inset-top, 0px)); left:50%; transform:translateX(-50%); z-index:70; background:var(--tf-navy-900); color:#fff; font-size:12px; font-weight:700; padding:8px 16px; border-radius:999px; box-shadow:0 2px 8px rgba(4,18,33,0.3); pointer-events:none; }
   html{ overscroll-behavior-y:contain; }
@@ -413,12 +414,12 @@ function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c
 
 function relabel(r){ Object.keys(r).forEach(function(k){ if (typeof r[k] === 'string' && r[k].indexOf('SeaFeed') >= 0) r[k] = r[k].replace(/SeaFeed/g, 'Treatment'); }); return r; }
 function fetchTable(key){
-  var tname = key === 'peers' ? TABLES.growth : TABLES[key];     // 'peers' = every farm's growth rows
+  var tname = key === 'peers' ? TABLES.growth : key === 'allmobs' ? TABLES.mobs : TABLES[key];     // 'peers' = every farm's growth rows, 'allmobs' = every farm's mob status
   if (LOCAL) return fetch('participant-preview-data/' + tname + '.json').then(function(r){ if(!r.ok) throw new Error(key); return r.json(); });
   var url = BASE + tname + '_view/FeatureServer/0/query', rows = [];
   var groupKeys = ['mobs','latest','compare','stock','placements','growth','progress','weather','events'];
   var where = encodeURIComponent((groupKeys.indexOf(key) >= 0 ? 'farm_group' : 'farm_name') + " = '" + FARM.replace(/'/g, "''") + "'");
-  if (key === 'daily' || key === 'trial' || key === 'peers') where = '1%3D1';   // daily is filtered to this farm's mobs client-side
+  if (key === 'daily' || key === 'trial' || key === 'peers' || key === 'allmobs') where = '1%3D1';   // daily is filtered to this farm's mobs client-side
   function page(offset){
     var q = '?where=' + where + '&outFields=*&returnGeometry=false&orderByFields=OBJECTID&resultOffset=' + offset + '&resultRecordCount=1000&f=json';
     return fetch(url + q).then(function(r){
@@ -443,8 +444,8 @@ function fetchGwp(){
 
 function load(){
   $('err').hidden = true; fromCache = false; cachedAt = null;
-  var OPTIONAL = ['growth','progress','weather','events','peers'];   // extras: if one can't load, the rest of the page still works
-  Promise.all([fetchGwp()].concat(Object.keys(TABLES).concat(['peers']).map(function(k){
+  var OPTIONAL = ['growth','progress','weather','events','peers','allmobs'];   // extras: if one can't load, the rest of the page still works
+  Promise.all([fetchGwp()].concat(Object.keys(TABLES).concat(['peers','allmobs']).map(function(k){
     return fetchTable(k).then(function(rows){ D[k] = rows.map(relabel); }, function(err){ if (OPTIONAL.indexOf(k) >= 0) { D[k] = []; return; } throw err; });
   })))
     .then(init)
@@ -736,7 +737,7 @@ function renderWindows(){
     var g = growthFor(farm, w), ok = g && g.eligible && g.diff_kg != null;
     if (ok) elig.push({ w:w, g:g });
     var small = ok && Math.min(g.seafeed_animals || 0, g.control_animals || 0) < 40;
-    var cls = ok && !small ? (g.diff_kg > 0.05 ? 'good' : g.diff_kg < -0.05 ? 'bad' : '') : '';
+    var rd = ok ? Math.round(g.diff_kg * 100) / 100 : 0, cls = rd > 0 ? 'good' : rd < 0 ? 'bad' : '';   // difference always green or red, even for a small sample
     rows.push('<tr class="' + (w === state.win ? 'sel' : '') + (small ? ' smalln' : '') + '" data-w="' + w + '"><td class="mob">' + (w === 9999 ? 'Since start' : 'Last ' + WIN_LABEL[w]) +
       '<small>' + (ok ? (g.seafeed_animals || '?') + ' and ' + (g.control_animals || '?') + ' animals' : 'not enough data yet') + '</small></td>' +
       '<td class="num">' + (ok ? nf(g.seafeed_adg_kg,2) : '—') + '</td>' +
@@ -850,18 +851,28 @@ function renderPlanner(){
 
 /* ---------- how farms compare ---------- */
 function renderPeers(){
-  var w = state.win, now = Date.now();
-  var rows = (D.peers || []).filter(function(r){ return r.window_days === w && r.eligible && r.diff_kg != null && (now - r.comparison_date) < 3 * DAY; });   // only farms reporting this week
-  var body = $('peer-body');
-  if (rows.length < 2) { body.innerHTML = '<div class="empty">Other farms will appear here once they have enough data for this period.</div>'; return; }
-  rows.sort(function(a,b){ return b.diff_kg - a.diff_kg; });
-  var max = Math.max.apply(null, rows.map(function(r){ return Math.abs(r.diff_kg); })) || 1;
-  body.innerHTML = rows.map(function(r){
-    var me = r.farm_group === FARM, pct = Math.abs(r.diff_kg) / max * 50, pos = r.diff_kg >= 0;
-    var name = esc(r.farm_group) + (r.cohort ? ' (' + esc(r.cohort) + ')' : '') + (me ? ' <span class="pill" style="background:rgba(58,169,137,0.15);color:var(--tf-seafeed)">You</span>' : '');
-    return '<div class="peer' + (me ? ' me' : '') + '"><span>' + name + '</span><span class="bar"><i style="' + (pos ? 'left:50%;' : 'right:50%;') + 'width:' + pct + '%;background:' + (pos ? MINT : RED) + '"></i></span><span class="val" style="color:' + (pos ? 'var(--tf-seafeed)' : 'var(--tf-red)') + '">' + sgn(r.diff_kg,2) + '</span></div>';
-  }).join('');
+  var w = state.win, now = Date.now(), body = $('peer-body');
+  var closedFarms = {}; (D.allmobs || []).forEach(function(m){ if (m.status === 'Closed') closedFarms[m.farm_name] = 1; });
+  var open = (D.peers || []).filter(function(r){ return !closedFarms[r.farm_name] && r.window_days === w && r.eligible && r.diff_kg != null && (now - r.comparison_date) < 3 * DAY; });   // only cohorts reporting this week
+  var closed = (D.peers || []).filter(function(r){ return closedFarms[r.farm_name] && r.window_days === 9999 && r.eligible && r.diff_kg != null; });   // finished cohorts: whole-trial result
+  function list(rows){
+    rows.sort(function(a,b){ return b.diff_kg - a.diff_kg; });
+    var max = Math.max.apply(null, rows.map(function(r){ return Math.abs(r.diff_kg); })) || 1;
+    return rows.map(function(r){
+      var me = r.farm_group === FARM, pct = Math.abs(r.diff_kg) / max * 50, pos = r.diff_kg >= 0;
+      var name = esc(r.farm_group) + (r.cohort ? ' (' + esc(r.cohort) + ')' : '') + (me ? ' <span class="pill" style="background:rgba(58,169,137,0.15);color:var(--tf-seafeed)">You</span>' : '');
+      return '<div class="peer' + (me ? ' me' : '') + '"><span>' + name + '</span><span class="bar"><i style="' + (pos ? 'left:50%;' : 'right:50%;') + 'width:' + pct + '%;background:' + (pos ? MINT : RED) + '"></i></span><span class="val" style="color:' + (pos ? 'var(--tf-seafeed)' : 'var(--tf-red)') + '">' + sgn(r.diff_kg,2) + '</span></div>';
+    }).join('');
+  }
+  var html = open.length >= 2 ? list(open) : '<div class="empty">Other farms will appear here once they have enough data for this period.</div>';
+  if (closed.length) {
+    html += '<details class="ribbon" id="peer-closed"' + (state.peerOpen ? ' open' : '') + '><summary><span>Closed cohorts</span><span class="count">' + closed.length + (closed.length === 1 ? ' cohort' : ' cohorts') + '</span><span class="chev" aria-hidden="true"></span></summary>' +
+      '<div class="ribbon-body"><p class="chart-sub" style="margin-top:14px">Whole-trial results, compared over the same days.</p>' + list(closed) + '</div></details>';
+  }
+  body.innerHTML = html;
+  var d = $('peer-closed'); if (d) d.addEventListener('toggle', function(){ state.peerOpen = d.open; });
 }
+
 
 /* ---------- download + print ---------- */
 function downloadCsv(){
